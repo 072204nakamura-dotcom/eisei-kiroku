@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>仕込み・衛生管理 使い方</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#fff; --ink:#1F2B33; --muted:#5E6C75; --line:#D3DADE; --soft:#F2F4F5; --store:#274261; --ok:#2E7A58; --ng:#B3322A; --warn:#9A6A0E; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:var(--paper); color:var(--ink);
+    font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic","Meiryo",sans-serif; font-size:17px; line-height:1.8; }
+  .wrap { max-width:640px; margin:0 auto; padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(80px + env(safe-area-inset-bottom,0px)); }
+  h1 { font-size:26px; margin:10px 0 4px; }
+  .lead { color:var(--muted); margin:0 0 22px; }
+  h2 { font-size:18px; margin:34px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--ink); }
+  h3 { font-size:16px; margin:20px 0 6px; color:var(--store); }
+  p { margin:0 0 12px; }
+  ol, ul { padding-left:22px; margin:0 0 12px; }
+  li { margin-bottom:6px; }
+  .box { background:var(--soft); border-radius:12px; padding:14px 16px; margin:12px 0 18px; }
+  .box b { color:var(--store); }
+  .btn { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:1px 10px; font-size:14px; background:#fff; white-space:nowrap; }
+  .btn.g { background:var(--store); color:#fff; border-color:var(--store); }
+  .btn.r { background:var(--ng); color:#fff; border-color:var(--ng); }
+  .btn.ok { background:var(--ok); color:#fff; border-color:var(--ok); }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:15px; }
+  th, td { border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; vertical-align:top; }
+  th { color:var(--muted); font-weight:500; white-space:nowrap; }
+  .toc { background:var(--soft); border-radius:12px; padding:12px 16px 12px 34px; margin:0 0 10px; }
+  .toc li { margin:2px 0; }
+  a { color:var(--store); }
+  .back { display:inline-block; margin-top:30px; }
+  .red { color:var(--ng); font-weight:700; } .yel { color:var(--warn); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>仕込み・衛生管理 使い方</h1>
+<p class="lead">仕込んだものの在庫と期限を管理し、毎日の衛生チェックを記録するアプリです。なかむら・Café照の両方で使います。</p>
+
+<ol class="toc">
+  <li><a href="#s1">まず開いたら</a></li>
+  <li><a href="#s2">今日の仕込みと在庫を見る</a></li>
+  <li><a href="#s3">明日の仕込み（前日の引き継ぎ）</a></li>
+  <li><a href="#s4">衛生の記録をつける</a></li>
+  <li><a href="#s5">一覧と振り返り</a></li>
+  <li><a href="#s6">計画（スタッフ・保管場所・品目）</a></li>
+  <li><a href="#s7">言葉の意味</a></li>
+  <li><a href="#s8">困ったとき</a></li>
+</ol>
+
+<h2 id="s1">1. まず開いたら</h2>
+<p>画面の上から順に、こう並んでいます。</p>
+<ul>
+  <li><span class="btn">❓ 使い方</span> <span class="btn">💬 ご意見箱</span> … このページと、意見を送るボタン</li>
+  <li>店の名前と <span class="btn">なかむら</span> <span class="btn">Café照</span> … いまどちらの店を見ているか。押すと切り替わり、色も変わります（なかむら＝紺、Café照＝黄土色）</li>
+  <li>画面の中身（開いているタブの内容）</li>
+  <li>いちばん下のタブ … <span class="btn">仕込み</span> <span class="btn">衛生</span> <span class="btn">一覧</span> <span class="btn">振り返り</span> <span class="btn">計画</span>（なかむらは仕込み表を使わないので「仕込み」は出ません）</li>
+</ul>
+<p>どのタブでも、最初に <b>記入者</b> を選びます。自分の名前をプルダウンから選んでください。選ばないと○や火入れは押せません。一度選ぶと、タブを移っても覚えています。</p>
+<div class="box">スマホは「ホーム画面に追加」しておくとアプリのように開けます。<br>iPhone：共有ボタン → ホーム画面に追加／Android：メニュー（⋮）→ ホーム画面に追加</div>
+
+<h2 id="s2">2. 今日の仕込みと在庫を見る</h2>
+<p><span class="btn">仕込み</span> タブを開くと、「今日の仕込みと在庫」に仕込み済みのものが並びます。今日仕込んだものが「今日仕込んだもの」として上に、それ以外が「在庫」として<b>期限の近い順</b>に出ます。</p>
+<table>
+  <tr><th>右の日付</th><td>消費期限です。<span class="red">期限切れ</span>と<span class="red">今日まで</span>は赤、<span class="yel">明日まで</span>は黄色の枠。それより先は白です</td></tr>
+  <tr><th>名前の横のタグ</th><td>「非加熱」「加熱」「冷却再加熱」は衛生管理の分類（→7章）。「真空」は真空パックしてあるものです。冷凍してあるものは期限の代わりに「冷凍中」と出ます</td></tr>
+  <tr><th>小さい文字</th><td>量・保管場所・いつ誰が仕込んだか・火入れの回数</td></tr>
+</table>
+<p>それぞれの品に、ボタンが4つあります。</p>
+<table>
+  <tr><th><span class="btn g">火入れ</span></th><td>ソースや煮込みを沸かし直したときに押します。期限が今日から3日後に延び、誰がいつ火入れしたかが残ります。火入れができる品目にだけ出ます</td></tr>
+  <tr><th><span class="btn">冷凍</span> / <span class="btn g">解凍</span></th><td>冷凍できる品目にだけ出ます。「冷凍」を押すと期限なしの冷凍中になり、「解凍」を押すとその日から品目ごとに決めた日数（ハンバーグなら1日）が期限になります</td></tr>
+  <tr><th><span class="btn">直す</span></th><td>残量・期限・保管場所を書き換える欄が開きます。使って減ったときは残量を直してください</td></tr>
+  <tr><th><span class="btn">使い切り</span></th><td>使い終わったら押します。在庫から消え、「今日終わったもの」に移ります</td></tr>
+  <tr><th><span class="btn">廃棄</span></th><td>捨てたときに押します。理由（期限切れ、鮮度低下など）を聞かれるので短く書きます</td></tr>
+</table>
+<div class="box"><b>間違えて押したとき</b>：使い切り・廃棄はその日のうちなら、画面下の「今日終わったもの」で <span class="btn">戻す</span> を押せば在庫に戻ります。</div>
+<p>押した内容は、いったん手元にたまります。画面下に赤い <span class="btn r">仕込み表を保存する（未保存 ○件）</span> が出るので、作業が一区切りしたら押してください。押すまでは他の人のスマホには反映されません。</p>
+
+<h2 id="s3">3. 明日の仕込み（前日の引き継ぎ）</h2>
+<p>「明日の仕込み」は、明日の営業に向けて何をどれだけ仕込むかを見る場所です。前日の引き継ぎのときにここを見て確認し、仕込んだものは今日の在庫に入ります。</p>
+<ol>
+  <li><b>仕込む日</b> を確認します（ふつうは今日のまま。日付を変えると「明日」もずれます）</li>
+  <li><b>明日の昼の人数</b>・<b>明日の夜の人数</b> に明日の予約や見込みを入れます。各品目に、必要な量と「あと○○」（足りない分）が出ます。足りているものは「足りています」</li>
+  <li>仕込む品目の <span class="btn">仕込む</span> を押します。入力欄が開きます。品目は「切りもの」「ソース類」のような区分ごとに並んでいます（区分は計画タブで店ごとに決めます）</li>
+</ol>
+<table>
+  <tr><th>数量</th><td>仕込んだ量。足りない分が最初から入っているので、違えば直します</td></tr>
+  <tr><th>保管場所</th><td>どこにしまうか。品目ごとに決めた場所が最初から選ばれています</td></tr>
+  <tr><th>冷蔵／真空／冷凍</th><td>どう保存するか。「冷蔵」は仕込み日から品目の日数（基本3日）。「真空」は真空パックする品目にだけ出て、真空の日数で期限を計算します。「冷凍」は冷凍する品目にだけ出て、期限なしの冷凍中になり、解凍したときに期限がつきます</td></tr>
+  <tr><th>消費期限</th><td>自動で入ります（真空なし＝3日後が基本）。変えたいときは日付を直します</td></tr>
+  <tr><th>味見・確認</th><td>味見して問題なく、分類どおりの確認（火の通り・冷却など）ができたら <span class="btn ok">○</span>。何かあれば <span class="btn r">×</span> を押して、何があってどうしたかを書きます</td></tr>
+</table>
+<ol start="4">
+  <li><span class="btn g">在庫に入れる</span> を押します。在庫に並び、期限のラベルと同じ日付が残ります</li>
+  <li>最後に赤い <span class="btn r">仕込み表を保存する</span> を押します</li>
+</ol>
+<div class="box"><b>登録にない品目を仕込むとき</b>：「明日の仕込み」の下の欄で区分を選び、品目名を入れて <span class="btn">仕込む</span>。開いた入力欄で分類（非加熱・加熱・冷却再加熱）と単位も選べます。その日だけの品として在庫に入ります。毎回作るものなら、計画タブに登録しておくと次から楽です。<br><b>なかむら</b>は決まった仕込み品目がないので、いつもこの欄を使います。区分はコースの項目（前菜1・前菜2・前菜3・パスタ・スープ・魚料理・肉料理・デザート）です。</div>
+<p>物に書く日付ラベルは今までどおり貼ってください。ラベルの日付とアプリの「仕込み」の日付が同じであれば、それが記録になります。</p>
+
+<h2 id="s4">4. 衛生の記録をつける</h2>
+<p><span class="btn">衛生</span> タブは、営業日に1回つける衛生チェックです。10項目それぞれに <span class="btn ok">○</span> か <span class="btn r">×</span> を押します。</p>
+<table>
+  <tr><th>一般衛生管理（7項目）</th><td>原材料の受入確認、冷蔵庫・冷凍庫の温度、交差汚染・二次汚染の防止、器具の洗浄・消毒、トイレの洗浄・消毒、健康管理・作業着、手洗い。項目の下に確認のポイントが書いてあります</td></tr>
+  <tr><th>重要管理（3項目）</th><td>非加熱のまま提供、加熱してすぐ提供、加熱後に冷却・再加熱。その日の対象メニューと、仕込みの味見・確認の結果が下に出ます</td></tr>
+</table>
+<ol>
+  <li>記録する日を確認します（ふつうは今日）</li>
+  <li>10項目すべてに○か×を押します。右上に「7 / 7」「3 / 3」と進み具合が出ます</li>
+  <li>×を押した項目は、開いた欄に「何があって、どうしたか」を書きます（例：冷凍庫が−12℃だった。霜取りをして−18℃まで下がったのを確認）</li>
+  <li><span class="btn g">この日の記録を保存する</span> を押します</li>
+</ol>
+<div class="box"><b>×は悪いことではありません。</b>気づいて直したことを書くのが記録です。×をつけて対処を書いた記録のほうが、全部○の記録より信頼されます。</div>
+<p>同じ日をあとから直して保存すると、前の記録も残ったまま新しい版になります。</p>
+
+<h2 id="s5">5. 一覧と振り返り</h2>
+<h3>一覧</h3>
+<p><span class="btn">一覧</span> タブは、月ごとの衛生記録の表です。縦に日にち、横に10項目。○は緑、×は赤。右に記入者と、×のときの内容が出ます。記録していない日は薄い字で「記録なし」（定休日は空でかまいません）。</p>
+<p>保健所の立入のときは、この画面をそのまま見せるか、<span class="btn">印刷する</span> でA4横に出します。</p>
+<h3>振り返り</h3>
+<p><span class="btn">振り返り</span> タブは月に1回、月末か月初に店主が行います。その月の×の記録が「起きた問題」に自動で下書きされているので、6つの質問に答え、「来月に向けて直すこと」を書いて <span class="btn g">振り返りを保存する</span>。なければ「特になし」と書きます。</p>
+
+<h2 id="s6">6. 計画（スタッフ・保管場所・品目）</h2>
+<p><span class="btn">計画</span> タブは店ごとの設定です。ふだんは店主が使います。<b>どの欄も、いちばん下の <span class="btn g">計画を保存する</span> を押すまで反映されません。</b></p>
+<div class="box"><b>仕込み表を使うかどうか</b>：いちばん上の「この店で仕込み表（在庫・明日の仕込み）を使う」で決めます。オフにすると「仕込み」タブが消え、衛生の記録・一覧・振り返りだけになります。なかむらはオフ（衛生管理の記録だけ）、Café照はオンで使います。</div>
+<table>
+  <tr><th>スタッフ</th><td>記入者として選べる名前。1行に1人。両店で働く人は両方の店に入れます</td></tr>
+  <tr><th>保管場所</th><td>冷蔵庫・冷凍庫・棚の名前。1行に1つ</td></tr>
+  <tr><th>仕込み表の区分</th><td>仕込み表の見出しになるまとまり。上から順に1行に1つ（例：切りもの、ソース類、魚介類、肉類）。空なら区分なしで並びます</td></tr>
+  <tr><th>仕込み品目</th><td>品目がまだ無い店では「初期品目を読み込む」ボタンが出ます。押すと店の定番の品目が区分ごとに入るので、分類や日数を確かめて保存します。<span class="btn">＋ 品目を追加</span> で増やします。並び順がそのまま仕込み表の順です。<span class="btn">上へ</span> で並べ替え、<span class="btn">消す</span> で削除</td></tr>
+  <tr><th>メニューの分類</th><td>お客様に出すメニューを、非加熱・加熱・冷却再加熱の3つに分けて1行に1品。衛生タブの重要管理に表示されます</td></tr>
+</table>
+<p>品目ごとに決めるもの：</p>
+<table>
+  <tr><th>区分</th><td>仕込み表のどの見出しの下に出すか。「（その他）」にすると一番下にまとまります</td></tr>
+  <tr><th>分類</th><td>非加熱／加熱／冷却再加熱／なし。「冷却再加熱」にすると火入れが自動でオンになります</td></tr>
+  <tr><th>単位</th><td>g・ml・個・枚・本・切れ・パック・セット・人前</td></tr>
+  <tr><th>保管場所</th><td>いつもしまう場所。仕込むときに最初から選ばれます</td></tr>
+  <tr><th>1人あたり</th><td>お客様1人に使う量。人数から必要量を計算します</td></tr>
+  <tr><th>固定量</th><td>人数に関係なく毎回仕込む量。1人あたりと両方入れると足し算です</td></tr>
+  <tr><th>保存日数</th><td>真空していないときに何日もつか。空なら3日</td></tr>
+  <tr><th>真空時の日数</th><td>真空パックしたときの日数。空ならその品目に「真空」のボタンは出ません</td></tr>
+  <tr><th>解凍後の日数</th><td>冷凍したものを解凍してから何日もつか（ハンバーグなら1日）。空ならその品目に「冷凍」のボタンは出ません</td></tr>
+  <tr><th>火入れで期限を3日延ばせる</th><td>ソース・煮込みなど、沸かし直して保存を延ばす品はチェック</td></tr>
+</table>
+
+<h2 id="s7">言葉の意味</h2>
+<table>
+  <tr><th>非加熱</th><td>加熱せずそのまま出す料理（生野菜、カルパッチョ、生クリーム）。冷蔵から出してすぐ使い、器具と手を清潔に、仕上げたらすぐ冷蔵</td></tr>
+  <tr><th>加熱</th><td>加熱してすぐ出す料理（ステーキ、揚げ物）。中心75℃で1分以上（二枚貝は85〜90℃で90秒以上）</td></tr>
+  <tr><th>冷却再加熱</th><td>一度加熱し、冷まして保存する料理。温め直して出すもの（フォン、ソース、煮込み）も、冷たいまま出すもの（煮物の小鉢、マッシュポテト）もここ。小分けにして氷水で急冷、再加熱して出すものは沸騰して温度が上がったのを確認</td></tr>
+  <tr><th>交差汚染・二次汚染</th><td>生の肉・魚の菌が、まな板・包丁・手・冷蔵庫の中で他の食材にうつること</td></tr>
+  <tr><th>火入れ</th><td>保存中のソースや煮込みを沸かし直すこと。このアプリでは期限が3日延びます</td></tr>
+  <tr><th>真空</th><td>真空パックして保存すること。品目ごとに決めた日数まで期限が延びます</td></tr>
+  <tr><th>ロット／在庫</th><td>1回仕込んだひとまとまり。同じ品目でも仕込んだ日が違えば別の行になります</td></tr>
+  <tr><th>一般衛生管理</th><td>毎日の環境の確認（受入・温度・汚染・器具・トイレ・健康・手洗い）</td></tr>
+  <tr><th>重要管理</th><td>料理そのものの確認（非加熱・加熱・冷却再加熱）</td></tr>
+</table>
+<p>食中毒の原因になる菌やウイルスの一覧は、衛生タブの「食中毒の原因になる菌・ウイルスを見る」から開けます。</p>
+
+<h2 id="s8">8. 困ったとき</h2>
+<table>
+  <tr><th>「記入者を選んでください」「先に記入者を選んでください」</th><td>上の記入者のプルダウンで自分の名前を選んでから、もう一度押してください</td></tr>
+  <tr><th>「数量を入れてください」</th><td>仕込みの数量が空か0です</td></tr>
+  <tr><th>「味見・確認に○か×をつけてください」</th><td>在庫に入れる前に、○か×を押してください</td></tr>
+  <tr><th>「×のときは、何があってどうしたかを書いてください」</th><td>×を押した品目には理由が必要です。短くてかまいません</td></tr>
+  <tr><th>「まだ○×がついていません：〇〇」</th><td>衛生タブは10項目すべてに○×が必要です。〇〇の項目を押してください</td></tr>
+  <tr><th>「問題がなければ『特になし』と書いてください」</th><td>振り返りの2つの記入欄は空にできません</td></tr>
+  <tr><th>「保存を確認できませんでした」</th><td>電波が弱いときに出ます。少し待ってからもう一度保存を押してください。二重に保存されることはありません</td></tr>
+  <tr><th>「読み込めませんでした」</th><td>電波か、サーバーの一時的な不調です。少し待って開き直してください</td></tr>
+  <tr><th>「保存していない仕込み表の変更が○件あります」</th><td>店を切り替える前に、赤い保存ボタンを押してください。「捨てて移動」を選ぶと、その変更は消えます</td></tr>
+  <tr><th>火入れ・真空・冷凍のボタンが出ない</th><td>計画タブでその品目に設定がありません。火入れはチェック、真空は「真空時の日数」、冷凍は「解凍後の日数」を入れると出ます</td></tr>
+  <tr><th>自分の名前がプルダウンにない</th><td>計画タブの「スタッフ」に入っていません。店主に伝えてください</td></tr>
+  <tr><th>他の人の変更が見えない</th><td>その人がまだ保存していないか、こちらの画面が古いままです。「在庫」の横の「最新を読み込む」を押してください</td></tr>
+</table>
+<div class="box">分からないこと、使いにくいところは、アプリ上部の <span class="btn">💬 ご意見箱</span> から送ってください。小さなことでも大歓迎です。</div>
+
+<a class="back" href="index.html">← 仕込み・衛生管理に戻る</a>
+
+</div>
+</body>
+</html>

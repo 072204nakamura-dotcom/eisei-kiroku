@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>仕込み・衛生管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2F4F5; --ink: #1F2B33; --sub: #5E6C75; --line: #D3DADE;
+    --ok: #2E7A58; --ok-bg: #E2F0E8; --ng: #B3322A; --ng-bg: #F7E3E1;
+    --warn: #9A6A0E; --warn-bg: #FFF7E6;
+    --store: #274261; --store-soft: #E4EAF1;
+  }
+  body.teru { --store: #9A6A0E; --store-soft: #F5ECD9; }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 16px; line-height: 1.55;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+  body.dirty { padding-bottom: calc(146px + env(safe-area-inset-bottom, 0px)); }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--store); outline-offset: 2px; }
+
+  .helpbar { display: flex; gap: 8px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; background: var(--paper); max-width: 640px; margin: 0 auto; }
+  .helpbar a, .helpbar button {
+    flex: 1; text-align: center; border: 1.5px solid var(--line); background: #fff; border-radius: 999px;
+    padding: 8px 0; font-size: 13px; font-weight: 700; color: var(--sub); text-decoration: none;
+  }
+  /* ご意見箱 */
+  #fbpanel { position: fixed; inset: 0; z-index: 70; background: rgba(31,43,51,.45); display: none; align-items: flex-end; justify-content: center; }
+  #fbpanel:not([hidden]) { display: flex; }
+  #fbpanel .box { background: #fff; width: 100%; max-width: 640px; border-radius: 16px 16px 0 0; padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px)); max-height: 92vh; overflow-y: auto; }
+  #fbpanel h3 { margin: 0 0 4px; font-size: 17px; }
+  #fbpanel .fbkinds { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+  #fbpanel .fbkinds button { padding: 8px 12px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; }
+  #fbpanel .fbkinds button.on { background: var(--store); border-color: var(--store); color: #fff; font-weight: 700; }
+  #fbpanel .primary { margin: 12px 0 4px; height: 50px; }
+
+  header {
+    background: var(--store); color: #fff;
+    padding: 14px 16px 14px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  .storename { font-size: 20px; font-weight: 700; letter-spacing: .02em; }
+  .switch { display: flex; gap: 6px; margin-top: 10px; }
+  .switch button {
+    flex: 1; border: 1.5px solid rgba(255,255,255,.55); background: transparent;
+    color: #fff; border-radius: 999px; padding: 7px 0; font-size: 14px;
+  }
+  .switch button.on { background: #fff; color: var(--store); border-color: #fff; font-weight: 700; }
+
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  h2 { font-size: 17px; margin: 22px 0 10px; display: flex; justify-content: space-between; align-items: baseline; }
+  h2 .prog { font-size: 13px; color: var(--sub); font-weight: 400; }
+
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fields3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  label.f { display: block; font-size: 13px; color: var(--sub); }
+  label.f input, label.f select, textarea.big {
+    display: block; width: 100%; margin-top: 4px; padding: 10px 12px;
+    border: 1.5px solid var(--line); border-radius: 8px; background: #fff; font-size: 16px; color: var(--ink);
+  }
+  label.f select { padding: 10px 6px; }
+  textarea.big { min-height: 96px; resize: vertical; }
+  label.chk { display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 8px 0; margin-top: 8px; }
+  label.chk input { width: 22px; height: 22px; margin: 0; }
+
+  .status { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--store-soft); font-size: 14px; }
+  .status:empty { display: none; }
+  .hint { font-size: 13px; color: var(--sub); }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; margin-left: 6px;
+    border-radius: 999px; vertical-align: 2px; background: var(--store-soft); color: var(--store);
+  }
+  .tag.vac { background: #E8E8E8; color: #444; }
+
+  .item, .lot { background: #fff; border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .item.ok { border-color: var(--ok); }
+  .item.ng { border-color: var(--ng); background: #FFFBFA; }
+  .top { display: flex; gap: 10px; align-items: center; }
+  .txt { flex: 1; min-width: 0; }
+  .txt b { display: block; font-size: 16px; }
+  .txt small { display: block; font-size: 13px; color: var(--sub); line-height: 1.45; margin-top: 2px; }
+  .txt .short { color: var(--ng); font-weight: 700; }
+  .menus { font-size: 13px; color: var(--store); margin-top: 4px; }
+
+  .yn { display: flex; gap: 6px; flex-shrink: 0; }
+  .yn button {
+    width: 54px; height: 50px; border-radius: 10px; font-size: 24px; font-weight: 700;
+    border: 1.5px solid var(--line); background: #fff; color: var(--sub);
+  }
+  .yn button[data-v="ok"].on, .yn button[data-fv="ok"].on { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .yn button[data-v="ng"].on, .yn button[data-fv="ng"].on { background: var(--ng); border-color: var(--ng); color: #fff; }
+
+  .opts { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .opts button {
+    flex: 1; min-width: 120px; padding: 10px 8px; border-radius: 8px;
+    border: 1.5px solid var(--line); background: #fff; font-size: 14px;
+  }
+  .opts button.on { background: var(--store); border-color: var(--store); color: #fff; font-weight: 700; }
+
+  textarea.note {
+    width: 100%; margin-top: 10px; padding: 9px 11px; min-height: 64px;
+    border: 1.5px solid var(--ng); border-radius: 8px; font-size: 15px; resize: vertical; background: #fff;
+  }
+
+  .primary {
+    display: block; width: 100%; margin: 20px 0 8px; height: 54px;
+    border: none; border-radius: 12px; background: var(--store); color: #fff; font-size: 17px; font-weight: 700;
+  }
+  .primary:disabled { opacity: .5; }
+  .secondary { border: 1.5px solid var(--store); color: var(--store); background: #fff; border-radius: 8px; padding: 8px 14px; font-size: 14px; white-space: nowrap; }
+  .linkbtn { border: none; background: none; color: var(--sub); font-size: 14px; text-decoration: underline; padding: 6px 2px; }
+  .addrow { display: flex; gap: 8px; margin-top: 4px; }
+  .addrow select { flex: 0 0 auto; max-width: 38%; padding: 10px 4px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; font-size: 15px; }
+  .addrow input { flex: 1; min-width: 0; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 16px; }
+
+  /* 在庫 */
+  .lot.warn { border-color: #C98A1B; background: var(--warn-bg); }
+  .lot.over { border-color: var(--ng); background: #FFF3F2; }
+  .lot .exp { text-align: center; flex-shrink: 0; min-width: 66px; font-size: 11px; color: var(--sub); line-height: 1.3; }
+  .lot .exp b { display: block; font-size: 19px; color: var(--ink); }
+  .lot.warn .exp b, .lot.warn .exp { color: var(--warn); }
+  .lot.over .exp b, .lot.over .exp { color: var(--ng); }
+  .lotacts { display: flex; gap: 6px; margin-top: 10px; }
+  .lotacts button { flex: 1; padding: 9px 2px; border-radius: 8px; border: 1.5px solid var(--line); background: #fff; font-size: 13px; }
+  .lotacts button.fire { border-color: var(--store); color: var(--store); font-weight: 700; }
+  .lotacts button.disc { color: var(--ng); }
+  .edit { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .ended { opacity: .75; }
+
+  /* 仕込みフォーム */
+  .form { margin-top: 12px; padding: 12px; background: var(--store-soft); border-radius: 10px; }
+  .form .acts { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+  .form .primary { margin: 0; height: 46px; flex: 1; font-size: 15px; }
+  .unit { font-size: 14px; color: var(--sub); margin-left: 6px; }
+
+  h3.grp { font-size: 15px; margin: 16px 0 6px; padding-bottom: 4px; color: var(--store); border-bottom: 2px solid var(--store-soft); display: flex; justify-content: space-between; align-items: baseline; }
+  h3.grp .prog { font-size: 12px; color: var(--sub); font-weight: 400; }
+  .mrow .acts { display: flex; gap: 16px; margin-top: 8px; justify-content: flex-end; }
+
+  .summary { display: flex; gap: 8px; margin: 12px 0; }
+  .summary div { flex: 1; background: #fff; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--sub); }
+  .summary b { display: block; font-size: 22px; color: var(--ink); }
+  .summary .bad b { color: var(--ng); }
+  .ngs { background: #fff; border: 1.5px solid var(--line); border-radius: 10px; padding: 4px 12px; }
+  .ngs p { margin: 8px 0; font-size: 14px; border-bottom: 1px dashed var(--line); padding-bottom: 8px; }
+  .ngs p:last-child { border-bottom: none; }
+
+  .tablewrap { overflow-x: auto; background: #fff; border: 1.5px solid var(--line); border-radius: 10px; }
+  table.month { border-collapse: collapse; font-size: 12px; white-space: nowrap; min-width: 100%; }
+  table.month th, table.month td { border: 1px solid var(--line); padding: 5px 6px; text-align: center; }
+  table.month th { background: var(--store-soft); font-weight: 700; }
+  table.month td.n { text-align: left; white-space: normal; min-width: 180px; }
+  table.month td.x { color: var(--ng); font-weight: 700; }
+  table.month td.o { color: var(--ok); }
+  table.month tr.none td { color: #A5B0B6; }
+  table.month tr.sun td:first-child, table.month tr.sun td:nth-child(2) { color: var(--ng); }
+  .printhead { display: none; }
+
+  /* 食中毒の参考パネル */
+  #refpanel { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #refpanel .bar { position: sticky; top: 0; background: var(--store); color: #fff; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px; display: flex; justify-content: space-between; align-items: center; }
+  #refpanel .bar b { font-size: 17px; }
+  #refpanel .bar button { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: #fff; border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+  #refpanel .in { max-width: 640px; margin: 0 auto; padding: 16px 16px calc(40px + env(safe-area-inset-bottom, 0px)); }
+  .ref { background: #fff; border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .ref b.nm { font-size: 16px; display: block; }
+  .ref .kind { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .ref .kind.v { background: #E4D9F5; color: #4B2E83; }
+  .ref .kind.b { background: #DCEBF5; color: #1F4E79; }
+  .ref .kind.p { background: #E2F0E8; color: #2E7A58; }
+  .ref dl { margin: 8px 0 0; font-size: 14px; line-height: 1.5; }
+  .ref dt { color: var(--sub); font-size: 12px; margin-top: 6px; }
+  .ref dd { margin: 0; }
+  .ref dd .chk { color: var(--store); font-weight: 700; }
+  .principle { background: var(--store-soft); border-radius: 10px; padding: 12px; font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+
+  #savebar { position: fixed; left: 12px; right: 12px; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 40; }
+  #savebar button {
+    width: 100%; height: 52px; border: none; border-radius: 12px; background: var(--ng); color: #fff;
+    font-size: 16px; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.22);
+  }
+  #savebar button:disabled { opacity: .6; }
+
+  nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: #fff; border-top: 1.5px solid var(--line); display: flex;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  nav button { flex: 1; height: 62px; border: none; background: none; font-size: 11px; color: var(--sub); border-top: 3px solid transparent; }
+  nav button b { display: block; font-size: 14px; }
+  nav button.on { color: var(--store); border-top-color: var(--store); font-weight: 700; }
+
+  #toast {
+    position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    background: var(--ink); color: #fff; padding: 12px 14px; border-radius: 10px; font-size: 15px; z-index: 50; display: none;
+  }
+  body.dirty #toast { bottom: calc(136px + env(safe-area-inset-bottom, 0px)); }
+
+  @media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    header, nav, .noprint, #toast, #savebar { display: none !important; }
+    body { background: #fff; padding: 0; }
+    main { max-width: none; padding: 0; }
+    .printhead { display: block; font-size: 14pt; font-weight: 700; margin-bottom: 4mm; }
+    .tablewrap { overflow: visible; border: none; }
+    table.month { font-size: 9pt; }
+    table.month th, table.month td { border-color: #333; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="helpbar">
+  <a href="manual.html" target="_blank" rel="noopener">❓ 使い方</a>
+  <button type="button" id="fbBtn">💬 ご意見箱</button>
+</div>
+
+<header>
+  <div class="storename" id="storeName"></div>
+  <div class="switch">
+    <button data-store="nakamura">なかむら</button>
+    <button data-store="teru">Café照</button>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<div id="savebar" hidden><button id="saveStock">仕込み表を保存する</button></div>
+
+<nav>
+  <button data-tab="prep"><b>仕込み</b>在庫と作業</button>
+  <button data-tab="rec"><b>衛生</b>記録する</button>
+  <button data-tab="list"><b>一覧</b>月の記録</button>
+  <button data-tab="rev"><b>振り返り</b>月1回</button>
+  <button data-tab="plan"><b>計画</b>店の設定</button>
+</nav>
+
+<div id="fbpanel" hidden>
+  <div class="box">
+    <h3>💬 ご意見箱</h3>
+    <p class="hint" style="margin:0 0 10px">使いにくいところ、分からないところを送ってください。小さなことでも大歓迎です。名前は無くても送れます。</p>
+    <div id="fbName"></div>
+    <div class="hint" style="margin-top:10px">種類</div>
+    <div class="fbkinds" id="fbKinds"></div>
+    <div class="hint">内容</div>
+    <textarea class="big" id="fbText" placeholder="例：在庫の並び順を変えたい／火入れの意味が分かりにくい"></textarea>
+    <button type="button" class="primary" id="fbSend">送信する</button>
+    <button type="button" class="linkbtn" id="fbCancel" style="width:100%">キャンセル</button>
+  </div>
+</div>
+
+<div id="refpanel" hidden>
+  <div class="bar"><b>食中毒の原因になる菌・ウイルス</b><button type="button" id="refClose">閉じる</button></div>
+  <div class="in" id="refBody"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ▼ ここにGASのウェブアプリURLを貼る（https://script.google.com/macros/s/…/exec）
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz6gQKEPas5OjiqTgoGMkO_rutK3pidKRRepPNb8IFEyEYASZ4vEgYCNxMdp4ZVNBQExw/exec';
+
+// ▼ ご意見箱の送り先（献立管理システムのGASのURL。ご意見はそこの DATA_FEEDBACK シートに集まる）
+const FEEDBACK_URL = 'https://script.google.com/macros/s/AKfycbwqIJ_b3CTXJsHoi42encJbSyP-ZGwRKzQZKqQmCbpWgd_Eh3LTtIkwWz1nmKIuHQXTpg/exec';
+const FEEDBACK_APP_NAME = '仕込み・衛生管理';
+const FEEDBACK_KINDS = ['困っている', 'こうしてほしい', '不具合', 'その他'];
+
+const STORES = { nakamura: '洋食だいにんぐなかむら', teru: 'Café照' };
+const PREP_DEFAULT = { nakamura: false, teru: true };   // 仕込み表（在庫・明日の仕込み）を使う店。計画タブで切り替えられる
+function prepOn() {
+  const p = state.plan;
+  if (p && typeof p.usePrep === 'boolean') return p.usePrep;
+  return PREP_DEFAULT[state.store] !== false;
+}
+const T_REC = 'record', T_REV = 'review';   // スプレッドシートのTYPE列と同じ英字
+const DEFAULT_DAYS = 3;      // 真空していないときの保存日数
+const FIRE_DAYS = 3;         // 火入れで延びる日数
+const KEEP_ENDED_DAYS = 7;   // 使い切り・廃棄した品を台帳に残す日数
+const UNITS = ['g', 'ml', '個', '枚', '本', '切れ', 'パック', 'セット', '人前'];
+const CLS_SHORT = { c1: '非加熱', c2: '加熱', c3: '冷却再加熱' };
+
+const GENERAL = [
+  { k: 'g1', s: '受入', t: '原材料の受入確認', h: '納品時に鮮度・包装の破れ・期限・冷たさを確認' },
+  { k: 'g2', s: '温度', t: '冷蔵庫・冷凍庫の温度', h: '冷蔵10℃以下／冷凍−15℃以下' },
+  { k: 'g3', s: '汚染', t: '交差汚染・二次汚染の防止', h: '生肉・生魚と加熱済み・生食用でまな板と器具を分ける' },
+  { k: 'g4', s: '器具', t: '器具の洗浄・消毒', h: '使用後に洗浄し、まな板・包丁は消毒' },
+  { k: 'g5', s: 'トイレ', t: 'トイレの洗浄・消毒', h: 'ドアノブ・水栓・便座も消毒' },
+  { k: 'g6', s: '健康', t: '健康管理・作業着', h: '下痢・嘔吐・発熱・手の傷を確認、清潔な作業着と帽子' },
+  { k: 'g7', s: '手洗い', t: '手洗い', h: '出勤時・トイレ後・生の食材にふれた後・作業が変わるたび' }
+];
+const CRITICAL = [
+  { k: 'c1', s: '非加熱', t: '非加熱のまま提供', h: '冷蔵から出してすぐ使う。器具と手は消毒済み。仕上げ後すぐ冷蔵' },
+  { k: 'c2', s: '加熱', t: '加熱してすぐ提供', h: '中心75℃で1分以上（二枚貝は85〜90℃で90秒以上）' },
+  { k: 'c3', s: '冷却再加熱', t: '加熱後に冷却（そのまま提供・再加熱）', h: '小分け・氷水で速やかに冷却。再加熱して出すものは沸騰して温度が上がったのを確認' }
+];
+const REVIEW = [
+  { k: 'r1', t: '記録を書き忘れた日はなかったか', o: ['なかった', 'あった'] },
+  { k: 'r2', t: '「×」や問題の記録があったか', o: ['なかった', 'あった'] },
+  { k: 'r3', t: '同じ問題が繰り返し起きていないか', o: ['繰り返しなし', 'あり'] },
+  { k: 'r4', t: '衛生管理計画が今の作業と合っているか', o: ['合っている', '見直しが必要'] },
+  { k: 'r5', t: '新しいメニュー・仕込みが増えていないか', o: ['なし', 'あり（計画に追加）'] },
+  { k: 'r6', t: '従業員に内容を伝えたか', o: ['伝えた', 'まだ'] }
+];
+const ALL_ITEMS = GENERAL.concat(CRITICAL);
+
+// 計画が空のときに読み込める初期品目。分類・日数は目安なので、計画タブで直してから保存する
+const PRESETS = {
+  nakamura: {
+    places: ['冷蔵庫', '台下冷蔵庫', 'キッチン側ショーケース', 'ドリンクショーケース', 'ドリンク冷蔵庫', 'ドリンク台下冷凍冷蔵庫'],
+    groups: ['前菜1', '前菜2', '前菜3', 'パスタ', 'スープ', '魚料理', '肉料理', 'デザート'],
+    items: []   // なかむらは決まった仕込み品目がない。その日の品目を「明日の仕込み」の欄で区分を選んで入れる
+  },
+  teru: {
+    places: ['台下冷蔵庫', 'ドロワー冷蔵庫', '野菜ショーケース', '厨房冷蔵冷凍庫', 'デザート冷蔵冷凍庫', 'デシャップショーケース', 'レジ前ショーケース', 'ホールショーケース', 'ホール冷凍ストッカー'],
+    groups: ['野菜の切りもの', 'ソース類', '調理するもの', '肉類', '魚介類', '小鉢のおかず'],
+    items: [
+      ['野菜の切りもの', 'みそ汁の具', 'c2', 'g', 2, ''],
+      ['野菜の切りもの', '青葱', 'c1', 'g', 2, ''],
+      ['野菜の切りもの', '水菜', 'c1', 'g', 2, ''],
+      ['野菜の切りもの', 'サラダ', 'c1', 'g', 1, ''],
+      ['野菜の切りもの', '白葱', 'c1', 'g', 2, ''],
+      ['野菜の切りもの', 'キクラゲ', 'c2', 'g', 2, ''],
+      ['野菜の切りもの', '人参（鳥コーロー用）', 'c2', 'g', 2, ''],
+      ['野菜の切りもの', '小松菜', 'c2', 'g', 2, ''],
+      ['野菜の切りもの', 'しめじ', 'c2', 'g', 2, ''],
+      ['野菜の切りもの', 'ピーマン', 'c2', 'g', 2, ''],
+      ['野菜の切りもの', '人参の千切り（ラペ用）', 'c1', 'g', 2, ''],
+      ['野菜の切りもの', 'ジャガイモの皮むき', 'c2', 'g', 1, ''],
+      ['ソース類', 'タルタルソース', 'c1', 'ml', 2, ''],
+      ['ソース類', 'トマトソース', 'c3', 'ml', 3, 7, true],
+      ['ソース類', '帆立塩麹', 'c1', 'ml', 7, ''],
+      ['ソース類', '海鮮醤油', 'c1', 'ml', 7, ''],
+      ['ソース類', 'コク辛味噌', 'c1', 'ml', 7, ''],
+      ['ソース類', '和風ソース', 'c1', 'ml', 3, ''],
+      ['ソース類', 'ハンバーグソース', 'c3', 'ml', 3, '', true],
+      ['ソース類', 'ハンバーグ用トマトソース', 'c3', 'ml', 3, '', true],
+      ['ソース類', '甘酢', 'c3', 'ml', 7, ''],
+      ['ソース類', 'ブイヨン', 'c3', 'ml', 3, 7, true],
+      ['調理するもの', 'キャロットラペ', 'c1', 'g', 3, ''],
+      ['調理するもの', 'マッシュポテト', 'c3', 'g', 2, ''],
+      ['肉類', '鶏肉', 'c2', 'g', 2, 5],
+      ['肉類', '豚肉', 'c2', 'g', 2, 5],
+      ['肉類', 'ハンバーグ', 'c2', '個', 3, '', false, 1],
+      ['魚介類', '白身魚', 'c2', '切れ', 2, ''],
+      ['小鉢のおかず', '豆腐の小鉢', 'c1', '人前', 1, ''],
+      ['小鉢のおかず', '卵の小鉢', 'c3', '人前', 2, ''],
+      ['小鉢のおかず', 'お漬物の小鉢', 'c1', '人前', 3, ''],
+      ['小鉢のおかず', '野菜の小鉢', 'c3', '人前', 2, ''],
+      ['小鉢のおかず', 'サラダの小鉢', 'c1', '人前', 1, ''],
+      ['小鉢のおかず', '和え物の小鉢', 'c3', '人前', 2, '']
+    ]
+  }
+};
+function presetItems(store) {
+  const p = PRESETS[store]; if (!p) return null;
+  return { places: (p.places || []).slice(), groups: p.groups.slice(), items: p.items.map((r, i) => ({
+    id: 'p' + store + i, name: r[1], group: r[0], cls: r[2], unit: r[3], place: '', per: '', fixed: '', days: r[4], vdays: r[5], fire: !!r[6], fdays: r[7] == null ? '' : r[7]
+  })) };
+}
+
+// 食中毒の主な原因（この店で関係の深いものを中心に）。予防欄の【】は、このアプリのどの確認項目にあたるか
+const REF = [
+  { n: 'ノロウイルス', k: 'v', food: '二枚貝（カキなど）。感染した人の手を介して、どんな料理にもつく', trait: '潜伏1〜2日。ごく少量で感染し、冬に多い。アルコール消毒が効きにくい', prev: '二枚貝は85〜90℃で90秒以上。嘔吐・下痢のある人は調理しない。トイレ後の手洗いを2回。嘔吐物の処理は次亜塩素酸ナトリウム', chk: '手洗い／健康管理／トイレ／加熱' },
+  { n: 'カンピロバクター', k: 'b', food: '鶏肉（生・加熱不足）。鶏の生肉にふれた器具や手から他の食材へ', trait: '潜伏2〜7日。少量で発症。日本の細菌性食中毒で最も多い', prev: '鶏肉は中心75℃で1分以上。鶏の生肉を切ったまな板・トングを他に使わない。マリネ中の鶏はいちばん下の段に', chk: '加熱／交差汚染／器具' },
+  { n: 'サルモネラ', k: 'b', food: '卵、鶏肉、食肉。割った卵の放置、生卵を使うソース', trait: '潜伏6〜72時間。卵の殻にもつく', prev: '卵は冷蔵。割った卵はすぐ使う。加熱は中心75℃1分。生卵のソース（マヨネーズ・ムース類）は当日中', chk: '受入／温度／加熱' },
+  { n: '黄色ブドウ球菌', k: 'b', food: '人の手の傷・鼻・のどから。おにぎり、サンドイッチ、クリーム、盛りつけ後の料理', trait: '潜伏1〜6時間と短い。作った毒素は加熱しても壊れない', prev: '手に傷・化膿があれば手袋か調理から外れる。素手で盛る物は手洗いのあと。作ったらすぐ冷蔵（10℃以下）', chk: '健康管理／手洗い／非加熱' },
+  { n: '腸管出血性大腸菌（O157など）', k: 'b', food: '牛肉（レア・ひき肉・成形肉）、生野菜、井戸水', trait: '潜伏3〜8日。少量で発症し、子どもや高齢者は重症化する', prev: 'ひき肉・成形肉・筋切り肉は中心75℃で1分以上。生野菜は流水でよく洗う。生肉と生野菜の器具を分ける', chk: '加熱／交差汚染／非加熱' },
+  { n: 'ウェルシュ菌', k: 'b', food: 'カレー、シチュー、煮込み、フォン、大鍋の作り置き', trait: '潜伏6〜18時間。酸素がないところで増え、芽胞は加熱で死なない。大量調理の残り物で起きやすい', prev: '作ったら小分けにして氷水で急冷、すぐ冷蔵。再加熱は沸騰させて全体をかき混ぜる。前日の鍋を室温に置かない', chk: '冷却再加熱' },
+  { n: 'セレウス菌', k: 'b', food: '米飯、パスタ、ソース類の作り置き。ピラフ、リゾットの残り', trait: '嘔吐型は潜伏30分〜6時間で、毒素は加熱で壊れない。芽胞は加熱で残る', prev: '炊いたご飯・ゆでたパスタを室温に置かない。作り置きはすぐ冷蔵か冷凍。小分けして冷ます', chk: '冷却再加熱／温度' },
+  { n: '腸炎ビブリオ', k: 'b', food: '生の魚介（刺身、カルパッチョ）。夏の海水にいる', trait: '潜伏8〜24時間。塩分を好み、増えるのが速い', prev: '魚は真水でよく洗う。柵にしたらすぐ冷蔵（できれば4℃以下）。魚のまな板・包丁を他に使わない', chk: '受入／温度／交差汚染／非加熱' },
+  { n: 'リステリア', k: 'b', food: 'ナチュラルチーズ、生ハム、スモークサーモン、パテ、テリーヌ', trait: '潜伏数日〜数週間。冷蔵庫の温度でも増える。妊婦・高齢者に危険', prev: '冷蔵でも長く置かない。開封後は早めに使い切る。期限を守る。冷蔵庫は10℃以下、できれば4℃', chk: '温度／非加熱' },
+  { n: 'E型肝炎ウイルス', k: 'v', food: '豚・イノシシ・シカの肉やレバーの生・加熱不足', trait: '潜伏2〜9週間。ジビエで問題になる', prev: '豚・ジビエは中心までしっかり加熱（63℃30分または75℃1分以上）', chk: '加熱' },
+  { n: 'アニサキス（寄生虫）', k: 'p', food: 'サバ、アジ、イカ、サンマ、カツオ、タイなど。内臓から身に移る', trait: '食べて数時間で激しい腹痛。近年いちばん届出が多い', prev: '目で見て取り除く。−20℃で24時間以上の冷凍か、60℃で1分以上の加熱。内臓はすぐ取る。酢・塩・わさびでは死なない', chk: '受入／非加熱' }
+];
+function refHtml() {
+  const K = { v: 'ウイルス', b: '細菌', p: '寄生虫' };
+  return '<div class="principle"><b>食中毒予防の3原則</b><br>つけない（手洗い・器具の使い分け）、増やさない（すぐ冷蔵・室温に置かない）、やっつける（中心まで加熱）。衛生タブの項目は、この3つを毎日確認するためのものです。</div>' +
+    REF.map(r => '<div class="ref"><b class="nm">' + esc(r.n) + '<span class="kind ' + r.k + '">' + K[r.k] + '</span></b>' +
+      '<dl><dt>主な食品</dt><dd>' + esc(r.food) + '</dd>' +
+      '<dt>特徴</dt><dd>' + esc(r.trait) + '</dd>' +
+      '<dt>予防</dt><dd>' + esc(r.prev) + '<br><span class="chk">関係する確認：' + esc(r.chk) + '</span></dd></dl></div>').join('') +
+    '<p class="hint">基準：冷蔵10℃以下、冷凍−15℃以下、加熱は中心75℃で1分以上（二枚貝は85〜90℃で90秒以上）。</p>';
+}
+function openRef() { const p = $('#refpanel'); $('#refBody').innerHTML = refHtml(); p.hidden = false; p.scrollTop = 0; }
+
+// ---------- 小道具 ----------
+const $ = s => document.querySelector(s);
+const view = $('#view');
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => ymd(new Date());
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const shortTime = s => s ? s.slice(5, 16).replace('-', '/') : '';
+const nowIso = () => new Date().toISOString();
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const optNum = v => (v === '' || v == null) ? '' : num(v);
+const addDays = (s, n) => { const d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
+const mdShort = s => s ? (+s.slice(5, 7)) + '/' + (+s.slice(8, 10)) : '';
+const daysLeft = exp => Math.round((new Date(exp + 'T00:00:00') - new Date(today() + 'T00:00:00')) / 86400000);
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+const opt = (list, val, labels) => list.map((v, i) => '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(labels ? labels[i] : v) + '</option>').join('');
+
+// 記入者・担当者はスタッフ一覧から選ぶ（計画タブで登録）。未登録のうちは手入力
+function byField(label) {
+  const staff = (state.plan && state.plan.staff) || [];
+  const cap = label ? label : '';
+  if (!staff.length) return '<label class="f">' + cap + '<input id="by" value="' + esc(state.by) + '" placeholder="名前（計画でスタッフを登録すると選べます）"></label>';
+  if (staff.indexOf(state.by) < 0) state.by = '';
+  return '<label class="f">' + cap + '<select id="by">' + opt([''].concat(staff), state.by, ['選んでください'].concat(staff)) + '</select></label>';
+}
+function bindBy() { const b = $('#by'); if (b) b.onchange = b.oninput = e => state.by = e.target.value; }
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = 'none', 3500);
+}
+
+// ---------- 状態 ----------
+const state = {
+  store: 'nakamura', tab: 'prep', by: '',
+  prepDate: today(), recDate: today(), listMonth: today().slice(0, 7), revMonth: today().slice(0, 7),
+  plan: null, planSavedAt: '', stock: null, stockSavedAt: ''
+};
+const cache = {};
+let rec = null, rev = null, planDraft = [], token = 0;
+let dirty = 0, openForm = null, editLot = null, peopleTouched = false;
+
+// ---------- 通信 ----------
+async function apiGet(params) {
+  if (GAS_URL.indexOf('https://') !== 0) throw new Error('GAS_URL がまだ設定されていません');
+  const res = await fetch(GAS_URL + '?' + new URLSearchParams(params).toString());
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error || '読み込みに失敗しました');
+  return j;
+}
+async function apiPost(body) {
+  await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+}
+async function loadMonth(month, force) {
+  const key = state.store + '|' + month;
+  if (!force && cache[key]) return cache[key];
+  const j = await apiGet({ action: 'list', store: state.store, month: month });
+  cache[key] = j.items;
+  return j.items;
+}
+async function loadPlan() {
+  const j = await apiGet({ action: 'plan', store: state.store });
+  state.plan = Object.assign({ c1: [], c2: [], c3: [], items: [], places: [], staff: [], groups: [] }, j.plan || {});
+  state.planSavedAt = j.savedAt;
+}
+function normLedger(l) {
+  l = l || {};
+  return { lots: Array.isArray(l.lots) ? l.lots : [], people: l.people || {} };
+}
+async function fetchStock() {
+  const j = await apiGet({ action: 'stock', store: state.store });
+  return { ledger: normLedger(j.ledger), savedAt: j.savedAt || '' };
+}
+async function loadStock() {
+  const r = await fetchStock();
+  state.stock = r.ledger; state.stockSavedAt = r.savedAt;
+}
+// no-cors では保存の結果が読めないので、読み直して本当に増えたかを確かめる
+async function confirmSaved(month, type, date, prevVersions) {
+  for (let i = 0; i < 4; i++) {
+    await sleep(1500);
+    try {
+      const items = await loadMonth(month, true);
+      const f = items.find(x => x.type === type && x.date === date);
+      if (f && f.versions > prevVersions) return f;
+    } catch (e) { /* 次の回でもう一度 */ }
+  }
+  return null;
+}
+
+// ---------- 画面の切り替え ----------
+function leaveOk() {
+  if (!dirty) return true;
+  return confirm('保存していない仕込み表の変更が' + dirty + '件あります。捨てて移動しますか？');
+}
+function setStore(s) {
+  if (s === state.store && state.plan) return;
+  if (!leaveOk()) return;
+  dirty = 0; openForm = null; editLot = null; peopleTouched = false;
+  state.store = s;
+  document.body.classList.toggle('teru', s === 'teru');
+  $('#storeName').textContent = STORES[s];
+  document.querySelectorAll('.switch button').forEach(b => b.classList.toggle('on', b.dataset.store === s));
+  state.plan = null; state.stock = null;
+  render();
+}
+function setTab(t) {
+  if (t === state.tab) return;
+  state.tab = t;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  window.scrollTo(0, 0);
+  render();
+}
+function updateSaveBar() {
+  const bar = $('#savebar');
+  bar.hidden = !dirty;
+  document.body.classList.toggle('dirty', dirty > 0);
+  const b = $('#saveStock');
+  if (!b.disabled) b.textContent = '仕込み表を保存する（未保存 ' + dirty + '件）';
+}
+function markDirty() { dirty++; updateSaveBar(); }
+async function render() {
+  const my = ++token;
+  view.innerHTML = '<p class="hint">読み込み中…</p>';
+  try {
+    if (!state.plan) await loadPlan();
+    if (my !== token) return;
+    const on = prepOn();
+    document.querySelector('nav button[data-tab="prep"]').hidden = !on;
+    if (!on && state.tab === 'prep') { state.tab = 'rec'; document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === 'rec')); }
+    if ((state.tab === 'prep' || (state.tab === 'rec' && on)) && (!state.stock || !dirty)) await loadStock();
+    if (my !== token) return;
+    if (state.tab === 'prep') paintPrep();
+    if (state.tab === 'rec') await renderRec(my);
+    if (state.tab === 'list') await renderList(my);
+    if (state.tab === 'rev') await renderRev(my);
+    if (state.tab === 'plan') renderPlan();
+  } catch (e) {
+    if (my !== token) return;
+    view.innerHTML = '<div class="status">読み込めませんでした：' + esc(e.message) + '<br>電波を確認して、もう一度開いてください。</div>';
+  }
+  updateSaveBar();
+}
+
+// ---------- 仕込み（在庫台帳） ----------
+function itemById(id) { return (state.plan.items || []).find(x => x.id === id); }
+function lotById(id) { return state.stock.lots.find(x => x.id === id); }
+function lotDays(item, vac) {
+  const d = num(item.days) || DEFAULT_DAYS;
+  return vac ? (num(item.vdays) || d) : d;
+}
+function freezerPlace() {
+  const ps = (state.plan && state.plan.places) || [];
+  return ps.find(x => x.indexOf('冷凍') >= 0 && x.indexOf('冷蔵') < 0) || ps.find(x => x.indexOf('冷凍') >= 0) || '';
+}
+function clsHint(c) { const it = CRITICAL.find(x => x.k === c); return it ? it.h : '分類なし（衛生管理の対象外）'; }
+function clsHintShort(c) { const it = CRITICAL.find(x => x.k === c); return it ? '（' + it.s + '：' + it.h + '）' : ''; }
+function people(date) { const p = state.stock.people[date] || {}; return num(p.lunch) + num(p.dinner); }
+const needDate = () => addDays(state.prepDate, 1);   // 仕込みは翌日の営業のため。人数・必要量は「明日」で見る
+function needOf(item) {
+  const n = num(item.fixed) + num(item.per) * people(needDate());
+  return n > 0 ? Math.ceil(n) : '';
+}
+function stockOf(item) {
+  return state.stock.lots.filter(l => l.st === 'in' && l.it === item.id).reduce((s, l) => s + num(l.q), 0);
+}
+function frozenOf(item) {
+  return state.stock.lots.filter(l => l.st === 'in' && l.frz && l.it === item.id).reduce((s, l) => s + num(l.q), 0);
+}
+function expText(lot) {
+  if (lot.frz) return { cls: '', label: '冷凍中' };
+  if (!lot.exp) return { cls: '', label: '期限なし' };
+  const d = daysLeft(lot.exp);
+  if (d < 0) return { cls: 'over', label: '期限切れ' };
+  if (d === 0) return { cls: 'over', label: '今日まで' };
+  if (d === 1) return { cls: 'warn', label: '明日まで' };
+  return { cls: '', label: 'あと' + d + '日' };
+}
+function lotHtml(lot) {
+  const e = expText(lot);
+  const fires = (lot.f || []).length;
+  const meta = [
+    lot.g || '',
+    lot.q ? lot.q + (lot.u || '') : '',
+    lot.pl || '',
+    '仕込み ' + mdShort(lot.md) + (lot.by ? ' ' + lot.by : ''),
+    lot.th ? '解凍 ' + mdShort(lot.th) : '',
+    fires ? '火入れ' + fires + '回（' + mdShort(lot.f[fires - 1].d) + '）' : ''
+  ].filter(Boolean).join('・');
+  const canFreeze = num(lot.fd) > 0;
+  const editing = editLot === lot.id;
+  const places = state.plan.places || [];
+  return '<div class="lot ' + e.cls + '" data-lot="' + lot.id + '">' +
+    '<div class="top"><div class="txt"><b>' + esc(lot.n) +
+      (lot.c ? '<span class="tag">' + CLS_SHORT[lot.c] + '</span>' : '') +
+      (lot.vac ? '<span class="tag vac">真空</span>' : '') + '</b>' +
+      '<small>' + esc(meta) + (lot.v === 'ng' ? '<br>味見・確認×：' + esc(lot.note) : '') + '</small></div>' +
+    (lot.frz ? '<div class="exp">冷凍中<b>—</b>解凍後' + num(lot.fd) + '日</div>' : '<div class="exp">期限<b>' + mdShort(lot.exp) + '</b>' + e.label + '</div>') + '</div>' +
+    '<div class="lotacts">' +
+      (lot.frz ? '<button type="button" class="fire" data-act="thaw">解凍</button>' : '') +
+      (!lot.frz && lot.fr ? '<button type="button" class="fire" data-act="fire">火入れ</button>' : '') +
+      (!lot.frz && canFreeze ? '<button type="button" data-act="freeze">冷凍</button>' : '') +
+      '<button type="button" data-act="edit">直す</button>' +
+      '<button type="button" data-act="use">使い切り</button>' +
+      '<button type="button" class="disc" data-act="disc">廃棄</button>' +
+    '</div>' +
+    (editing ? '<div class="edit"><div class="fields3">' +
+      '<label class="f">残量<input class="eq" inputmode="decimal" value="' + esc(lot.q) + '"></label>' +
+      '<label class="f">期限<input type="date" class="eexp" value="' + esc(lot.exp) + '"></label>' +
+      '<label class="f">場所<select class="epl">' + opt([''].concat(places), lot.pl || '', ['（未設定）'].concat(places)) + '</select></label>' +
+      '</div><p class="hint">変えると、すぐ未保存の変更に数えられます。</p></div>' : '') +
+    '</div>';
+}
+function endedHtml(lot) {
+  const how = lot.st === 'disc' ? '廃棄' + (lot.why ? '（' + lot.why + '）' : '') : '使い切り';
+  return '<div class="lot ended" data-lot="' + lot.id + '"><div class="top"><div class="txt"><b>' + esc(lot.n) + '</b>' +
+    '<small>' + esc((lot.q ? lot.q + (lot.u || '') + '・' : '') + how + '・' + (lot.eb || '')) + '</small></div>' +
+    '<button type="button" class="secondary" data-act="undo">戻す</button></div></div>';
+}
+function needHtml(item) {
+  const u = item.unit || '';
+  const st = stockOf(item), need = needOf(item), fz = frozenOf(item);
+  const ppl = people(needDate());
+  let line = '在庫 ' + st + u + (fz ? '（うち冷凍 ' + fz + u + '）' : '');
+  if (need !== '') {
+    const calc = num(item.per) ? '1人' + item.per + u + '×' + ppl + '人' + (num(item.fixed) ? '＋' + item.fixed + u : '') : '毎回' + item.fixed + u;
+    const short = Math.max(0, need - st);
+    line += ' ／ 必要 ' + need + u + '（' + calc + '）' + (short > 0 ? '<span class="short">　あと' + short + u + '</span>' : '　足りています');
+  }
+  const open = openForm && openForm.item.id === item.id && !openForm.extra;
+  return '<div class="item" data-need="' + item.id + '">' +
+    '<div class="top"><div class="txt"><b>' + esc(item.name) + (item.cls ? '<span class="tag">' + CLS_SHORT[item.cls] + '</span>' : '') + '</b><small>' + line + '</small></div>' +
+    (open ? '' : '<button type="button" class="secondary" data-prep="' + item.id + '">仕込む</button>') + '</div>' +
+    (open ? formHtml(openForm) : '') + '</div>';
+}
+function formHtml(f) {
+  const it = f.item, u = it.unit || '';
+  const places = state.plan.places || [];
+  return '<div class="form">' +
+    (f.extra ? '<div class="fields" style="margin-bottom:10px">' +
+      '<label class="f">分類（衛生管理）<select class="fcls">' + opt(['', 'c1', 'c2', 'c3'], it.cls || '', ['なし', '非加熱', '加熱', '冷却再加熱']) + '</select></label>' +
+      '<label class="f">単位<select class="funit">' + opt([''].concat(UNITS), it.unit || '', ['（なし）'].concat(UNITS)) + '</select></label></div>' : '') +
+    '<div class="fields">' +
+      '<label class="f">数量<span class="unit">' + esc(u) + '</span><input class="fq" inputmode="decimal" value="' + esc(f.qty) + '" placeholder="0"></label>' +
+      '<label class="f">保管場所<select class="fpl">' + opt([''].concat(places), f.pl, ['（未設定）'].concat(places)) + '</select></label>' +
+    '</div>' +
+    '<div class="opts"><button type="button" data-keep="chill" class="' + (f.keep === 'chill' ? 'on' : '') + '">冷蔵（' + lotDays(it, false) + '日）</button>' +
+    (num(it.vdays) > 0 ? '<button type="button" data-keep="vac" class="' + (f.keep === 'vac' ? 'on' : '') + '">真空（' + lotDays(it, true) + '日）</button>' : '') +
+    (num(it.fdays) > 0 ? '<button type="button" data-keep="frz" class="' + (f.keep === 'frz' ? 'on' : '') + '">冷凍（解凍後' + num(it.fdays) + '日）</button>' : '') + '</div>' +
+    (f.keep === 'frz' ? '<p class="hint">冷凍中は期限なし。在庫の「解凍」を押した日から' + num(it.fdays) + '日が期限になります。</p>'
+      : '<label class="f" style="margin-top:10px">消費期限<input type="date" class="fexp" value="' + esc(f.exp) + '"></label>') +
+    '<div class="top" style="margin-top:12px"><div class="txt"><b>味見・確認</b><small>味見して問題なし、分類どおりの確認ができたら○。' + esc(clsHintShort(it.cls)) + '</small></div>' +
+    '<div class="yn"><button type="button" data-fv="ok" class="' + (f.v === 'ok' ? 'on' : '') + '" aria-label="確認できた">○</button>' +
+    '<button type="button" data-fv="ng" class="' + (f.v === 'ng' ? 'on' : '') + '" aria-label="問題あり">×</button></div></div>' +
+    '<textarea class="note" placeholder="何があって、どうしたか" ' + (f.v === 'ng' ? '' : 'hidden') + '>' + esc(f.note) + '</textarea>' +
+    '<div class="acts"><button type="button" class="primary" data-add>在庫に入れる</button><button type="button" class="linkbtn" data-cancel>やめる</button></div>' +
+    '</div>';
+}
+function paintNeeds() {
+  const items = state.plan.items || [];
+  const groups = state.plan.groups || [];
+  const el = $('#needlist');
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<div class="status">' + (groups.length
+      ? 'この店は決まった仕込み品目がないので、下の欄で区分（' + esc(groups.slice(0, 3).join('・')) + '…）を選び、その日の品目名を入れて「仕込む」を押します。'
+      : '仕込み品目がまだありません。「計画」タブで登録するか、下の欄から仕込んでください。') + '</div>';
+  } else if (!groups.length) {
+    el.innerHTML = items.map(needHtml).join('');
+  } else {
+    // 計画で決めた区分の順に並べ、区分のない品目は「その他」に
+    el.innerHTML = groups.concat(['その他']).map(g => {
+      const list = items.filter(it => g === 'その他' ? (!it.group || groups.indexOf(it.group) < 0) : it.group === g);
+      if (!list.length) return '';
+      return '<h3 class="grp">' + esc(g) + '<span class="prog">' + list.length + '品</span></h3>' + list.map(needHtml).join('');
+    }).join('');
+  }
+  const ex = openForm && openForm.extra ? '<div class="item">' + '<div class="top"><div class="txt"><b>' + esc(openForm.item.name) + (openForm.item.group ? '<span class="tag">' + esc(openForm.item.group) + '</span>' : '') + '</b><small>この日だけの品目</small></div></div>' + formHtml(openForm) + '</div>' : '';
+  $('#extraform').innerHTML = ex;
+}
+function paintPrep() {
+  const L = state.stock;
+  const nd = needDate();
+  const ppl = L.people[nd] || { lunch: '', dinner: '' };
+  const byExp = (a, b) => (a.exp || '9') < (b.exp || '9') ? -1 : (a.exp || '9') > (b.exp || '9') ? 1 : a.n < b.n ? -1 : 1;
+  const active = L.lots.filter(l => l.st === 'in');
+  const todayLots = active.filter(l => l.md === state.prepDate).sort(byExp);
+  const rest = active.filter(l => l.md !== state.prepDate).sort(byExp);
+  const alarm = active.filter(l => l.exp && daysLeft(l.exp) <= 1).length;
+  const endedToday = L.lots.filter(l => l.st !== 'in' && l.end === today());
+  const stockHtml = active.length
+    ? (todayLots.length
+        ? '<h3 class="grp">今日仕込んだもの<span class="prog">' + todayLots.length + '品</span></h3>' + todayLots.map(lotHtml).join('') +
+          '<h3 class="grp">在庫<span class="prog">' + rest.length + '品</span></h3>' + (rest.length ? rest.map(lotHtml).join('') : '<div class="status">ほかの在庫はありません。</div>')
+        : rest.map(lotHtml).join(''))
+    : '<div class="status">在庫はありません。</div>';
+  view.innerHTML =
+    '<div class="fields">' +
+      '<label class="f">仕込む日<input type="date" id="prepDate" value="' + state.prepDate + '"></label>' +
+      byField('記入者') +
+    '</div>' +
+    '<h2>今日の仕込みと在庫<span class="prog">' + active.length + '品' + (alarm ? '・期限が近い ' + alarm + '品' : '') +
+      (!dirty ? '　<button type="button" class="linkbtn" id="reload">最新を読み込む</button>' : '') + '</span></h2>' +
+    stockHtml +
+    '<h2>明日の仕込み<span class="prog">' + mdShort(nd) + '分</span></h2>' +
+    '<p class="hint" style="margin-top:-4px">明日の予約人数を入れると、品目ごとに必要量と足りない分が出ます。前日の引き継ぎはここを見て確認し、仕込んだら「仕込む」で今日の在庫に入れます。最後に赤い保存ボタンで保存します。</p>' +
+    '<div class="fields" style="margin-bottom:10px">' +
+      '<label class="f">明日（' + mdShort(nd) + '）昼の人数<input id="lunch" inputmode="numeric" value="' + esc(ppl.lunch) + '" placeholder="0"></label>' +
+      '<label class="f">明日（' + mdShort(nd) + '）夜の人数<input id="dinner" inputmode="numeric" value="' + esc(ppl.dinner) + '" placeholder="0"></label>' +
+    '</div>' +
+    '<div id="needlist"></div>' +
+    '<div id="extraform"></div>' +
+    '<div class="addrow">' +
+      ((state.plan.groups || []).length ? '<select id="extraGroup" aria-label="区分">' + opt([''].concat(state.plan.groups), '', ['区分'].concat(state.plan.groups)) + '</select>' : '') +
+      '<input id="extraName" placeholder="' + ((state.plan.items || []).length ? '登録にない品目を仕込む' : '品目名（例：真鯛のカルパッチョ 下処理）') + '"><button type="button" class="secondary" id="addExtra">仕込む</button></div>' +
+    (endedToday.length ? '<h2>今日終わったもの</h2>' + endedToday.map(endedHtml).join('') : '') +
+    (state.stockSavedAt ? '' : '<p class="hint" style="margin-top:20px">まだ一度も保存されていません</p>');
+
+  $('#prepDate').onchange = e => { state.prepDate = e.target.value || today(); openForm = null; peopleTouched = false; paintPrep(); };
+  bindBy();
+  $('#lunch').oninput = touchPeople;
+  $('#dinner').oninput = touchPeople;
+  $('#addExtra').onclick = () => {
+    const name = $('#extraName').value.trim();
+    if (!name) return toast('品目名を入れてください');
+    const eg = $('#extraGroup');
+    openForm = newForm({ id: '', name: name, group: eg ? eg.value : '', cls: '', unit: '', days: DEFAULT_DAYS, vdays: '', place: '', fire: false }, true);
+    $('#extraName').value = '';
+    paintNeeds();
+  };
+  const rl = $('#reload'); if (rl) rl.onclick = () => { state.stock = null; render(); };
+  paintNeeds();
+}
+function touchPeople() {
+  const L = state.stock, d = needDate();
+  L.people[d] = { lunch: $('#lunch').value, dinner: $('#dinner').value, at: nowIso() };
+  if (!peopleTouched) { peopleTouched = true; markDirty(); }
+  paintNeeds();
+}
+function newForm(item, extra) {
+  const st = extra ? 0 : stockOf(item), need = extra ? '' : needOf(item);
+  const qty = need !== '' ? Math.max(0, need - st) || need : '';
+  return {
+    item: item, extra: !!extra, qty: qty, keep: 'chill', pl: item.place || '',
+    exp: addDays(state.prepDate, lotDays(item, false)), expTouched: false, v: '', note: ''
+  };
+}
+function addLot() {
+  const f = openForm;
+  const by = state.by.trim();
+  if (!by) { toast('記入者を選んでください'); $('#by').focus(); return; }
+  if (!(num(f.qty) > 0)) return toast('数量を入れてください');
+  if (!f.v) return toast('味見・確認に○か×をつけてください');
+  if (f.v === 'ng' && !f.note.trim()) return toast('×のときは、何があってどうしたかを書いてください');
+  state.stock.lots.push({
+    id: uid('l'), it: f.item.id || '', n: f.item.name, c: f.item.cls || '', u: f.item.unit || '', g: f.item.group || '',
+    q: num(f.qty), md: state.prepDate, by: by, vac: f.keep === 'vac', frz: f.keep === 'frz', fd: num(f.item.fdays) || '',
+    pl: f.pl, exp: f.keep === 'frz' ? '' : f.exp,
+    f: [], fr: !!f.item.fire, v: f.v, note: f.note, st: 'in', at: nowIso()
+  });
+  openForm = null;
+  markDirty();
+  paintPrep();
+  toast(f.item.name + ' を在庫に入れました' + (f.keep === 'frz' ? '（冷凍）' : '（期限 ' + mdShort(f.exp) + '）'));
+}
+function lotAction(lot, act) {
+  const by = state.by.trim();
+  if (!by) { toast('先に記入者を選んでください'); $('#by').focus(); return; }
+  if (act === 'fire') {
+    lot.f = lot.f || [];
+    lot.f.push({ d: today(), b: by, at: nowIso() });
+    lot.exp = addDays(today(), FIRE_DAYS);
+    toast('火入れ：期限を ' + mdShort(lot.exp) + ' までに延ばしました');
+  } else if (act === 'freeze') {
+    lot.frz = true; lot.exp = '';
+    const fz = freezerPlace(); if (fz) lot.pl = fz;
+    toast('冷凍にしました。解凍したら「解凍」を押してください');
+  } else if (act === 'thaw') {
+    lot.frz = false; lot.th = today(); lot.exp = addDays(today(), num(lot.fd) || 1);
+    toast('解凍：期限は ' + mdShort(lot.exp) + ' までです');
+  } else if (act === 'use') {
+    lot.st = 'used'; lot.end = today(); lot.eb = by;
+  } else if (act === 'disc') {
+    const why = prompt('廃棄の理由（例：期限切れ、鮮度低下）');
+    if (why === null) return;
+    lot.st = 'disc'; lot.end = today(); lot.eb = by; lot.why = why.trim();
+  } else if (act === 'undo') {
+    lot.st = 'in'; delete lot.end; delete lot.eb; delete lot.why;
+  } else if (act === 'edit') {
+    editLot = editLot === lot.id ? null : lot.id;
+    paintPrep(); return;
+  }
+  lot.at = nowIso();
+  markDirty();
+  paintPrep();
+}
+// ---- 保存（ほかの人の変更とまとめる） ----
+function mergeLedger(local, server) {
+  const out = { lots: [], people: Object.assign({}, (server && server.people) || {}) };
+  const map = {};
+  ((server && server.lots) || []).forEach(l => map[l.id] = l);
+  local.lots.forEach(l => { const s = map[l.id]; if (!s || (l.at || '') >= (s.at || '')) map[l.id] = l; });
+  out.lots = Object.keys(map).map(k => map[k]);
+  Object.keys(local.people || {}).forEach(d => {
+    const a = local.people[d], b = out.people[d];
+    if (!b || (a.at || '') >= (b.at || '')) out.people[d] = a;
+  });
+  return out;
+}
+function serverHas(server, local) {
+  const map = {}; server.lots.forEach(l => map[l.id] = l);
+  return local.lots.every(l => map[l.id] && (map[l.id].at || '') >= (l.at || ''));
+}
+function prune(L) {
+  const cut = addDays(today(), -KEEP_ENDED_DAYS);
+  L.lots = L.lots.filter(l => l.st === 'in' || !l.end || l.end >= cut);
+  Object.keys(L.people).forEach(d => { if (d < cut) delete L.people[d]; });
+  // 台帳が大きくなりすぎたら、終わった品の古いものから外す（元の行はスプレッドシートに残る）
+  while (JSON.stringify(L).length > 45000) {
+    const ended = L.lots.filter(l => l.st !== 'in').sort((a, b) => (a.end || '') < (b.end || '') ? -1 : 1);
+    if (!ended.length) break;
+    L.lots = L.lots.filter(l => l.id !== ended[0].id);
+  }
+}
+async function saveStock() {
+  const by = state.by.trim();
+  if (!by) { toast('記入者を選んでください'); const f = $('#by'); if (f) f.focus(); return; }
+  const btn = $('#saveStock'); btn.disabled = true; btn.textContent = '保存しています…';
+  try {
+    let server = null;
+    try { server = await fetchStock(); } catch (e) { /* 読めなくても保存は続ける */ }
+    const merged = mergeLedger(state.stock, server ? server.ledger : null);
+    prune(merged);
+    await apiPost({ type: 'stock', store: state.store, by: by, data: merged });
+    for (let i = 0; i < 4; i++) {
+      await sleep(1500);
+      try {
+        const r = await fetchStock();
+        if (serverHas(r.ledger, merged)) {
+          state.stock = r.ledger; state.stockSavedAt = r.savedAt;
+          dirty = 0; peopleTouched = false; btn.disabled = false;
+          toast('保存しました');
+          if (state.tab === 'prep') paintPrep();
+          updateSaveBar();
+          return;
+        }
+      } catch (e) { /* 次の回でもう一度 */ }
+    }
+    toast('保存を確認できませんでした。電波を確認して、もう一度保存してください');
+  } catch (e) {
+    toast('保存できませんでした：' + e.message);
+  }
+  btn.disabled = false; updateSaveBar();
+}
+
+// ---------- 衛生の記録 ----------
+function itemHtml(it, a, extra) {
+  const v = a ? a.v : '';
+  return '<div class="item ' + v + '" data-g="rec" data-k="' + it.k + '">' +
+    '<div class="top"><div class="txt"><b>' + it.t + '</b><small>' + it.h + '</small>' + (extra || '') + '</div>' +
+    '<div class="yn"><button type="button" data-v="ok" class="' + (v === 'ok' ? 'on' : '') + '" aria-label="問題なし">○</button>' +
+    '<button type="button" data-v="ng" class="' + (v === 'ng' ? 'on' : '') + '" aria-label="問題あり">×</button></div></div>' +
+    '<textarea class="note" placeholder="何があって、どうしたか" ' + (v === 'ng' ? '' : 'hidden') + '>' + esc(a ? a.note : '') + '</textarea>' +
+    '</div>';
+}
+async function renderRec(my) {
+  const items = await loadMonth(state.recDate.slice(0, 7));
+  if (my !== token) return;
+  const ex = items.find(i => i.type === T_REC && i.date === state.recDate);
+  rec = { date: state.recDate, answers: ex ? JSON.parse(JSON.stringify(ex.data.answers || {})) : {}, prev: ex ? ex.versions : 0 };
+  const status = ex ? 'この日は記録済みです（' + esc(ex.by) + '）。直して保存すると、前の記録も残したまま新しい版になります。' : '';
+  const plan = state.plan || {};
+  const menuLine = k => (plan[k] && plan[k].length) ? '<div class="menus">対象：' + esc(plan[k].join('、')) + '</div>' : '<div class="menus">対象メニューは「計画」で登録できます</div>';
+  const prepLine = k => {
+    if (!prepOn() || !state.stock) return '';
+    const lots = state.stock.lots.filter(l => l.md === state.recDate && l.c === k);
+    if (!lots.length) return '';
+    const ok = lots.filter(l => l.v === 'ok').length, ng = lots.filter(l => l.v === 'ng').length;
+    return '<div class="menus">仕込みの味見・確認：' + lots.length + '品中 ○' + ok + (ng ? '　×' + ng : '') + '</div>';
+  };
+  view.innerHTML =
+    '<div class="fields">' +
+      '<label class="f">記録する日<input type="date" id="recDate" value="' + state.recDate + '"></label>' +
+      byField('記入者') +
+    '</div>' +
+    '<div class="status">' + status + '</div>' +
+    '<h2>一般衛生管理<span class="prog" id="pg"></span></h2>' +
+    GENERAL.map(it => itemHtml(it, rec.answers[it.k])).join('') +
+    '<h2>重要管理<span class="prog" id="pc"></span></h2>' +
+    '<p class="hint" style="margin-top:-4px"><button type="button" class="linkbtn" data-ref>食中毒の原因になる菌・ウイルスを見る</button></p>' +
+    CRITICAL.map(it => itemHtml(it, rec.answers[it.k], menuLine(it.k) + prepLine(it.k))).join('') +
+    '<button class="primary" id="saveRec">この日の記録を保存する</button>' +
+    '<p class="hint">×をつけた項目は、何があってどうしたかを書くと保存できます。</p>';
+  $('#recDate').onchange = e => { state.recDate = e.target.value || today(); render(); };
+  bindBy();
+  $('#saveRec').onclick = saveRec;
+  progress();
+}
+function progress() {
+  const done = list => list.filter(i => rec.answers[i.k] && rec.answers[i.k].v).length;
+  const pg = $('#pg'), pc = $('#pc');
+  if (pg) pg.textContent = done(GENERAL) + ' / ' + GENERAL.length;
+  if (pc) pc.textContent = done(CRITICAL) + ' / ' + CRITICAL.length;
+}
+async function saveRec() {
+  const by = state.by.trim();
+  if (!by) return toast('記入者を選んでください');
+  const missing = ALL_ITEMS.find(i => !rec.answers[i.k] || !rec.answers[i.k].v);
+  if (missing) return toast('まだ○×がついていません：' + missing.t);
+  const noNote = ALL_ITEMS.find(i => rec.answers[i.k].v === 'ng' && !rec.answers[i.k].note.trim());
+  if (noNote) return toast('×の項目は、どうしたかを書いてください：' + noNote.t);
+  const btn = $('#saveRec'); btn.disabled = true; btn.textContent = '保存しています…';
+  try {
+    await apiPost({ type: 'record', store: state.store, date: rec.date, by: by, data: { answers: rec.answers } });
+    const ok = await confirmSaved(rec.date.slice(0, 7), T_REC, rec.date, rec.prev);
+    if (ok) { toast('保存しました'); render(); return; }
+    toast('保存を確認できませんでした。一覧で届いているか見てください');
+  } catch (e) { toast('保存できませんでした：' + e.message); }
+  btn.disabled = false; btn.textContent = 'この日の記録を保存する';
+}
+
+// ---------- 月の一覧（保健所に見せる用） ----------
+async function renderList(my) {
+  const m = state.listMonth;
+  const items = await loadMonth(m, true);
+  if (my !== token) return;
+  const recs = {};
+  items.filter(i => i.type === T_REC).forEach(i => recs[i.date] = i);
+  const y = +m.slice(0, 4), mo = +m.slice(5, 7);
+  const days = new Date(y, mo, 0).getDate();
+  let ngCount = 0, rows = '';
+  for (let d = 1; d <= days; d++) {
+    const date = m + '-' + pad(d);
+    const wd = new Date(y, mo - 1, d).getDay();
+    const r = recs[date];
+    const a = r ? (r.data.answers || {}) : {};
+    const cells = ALL_ITEMS.map(it => {
+      if (!r) return '<td></td>';
+      const v = a[it.k] && a[it.k].v;
+      if (v === 'ng') ngCount++;
+      return v === 'ng' ? '<td class="x">×</td>' : '<td class="o">○</td>';
+    }).join('');
+    const notes = r ? ALL_ITEMS.filter(it => a[it.k] && a[it.k].v === 'ng').map(it => it.s + '：' + esc(a[it.k].note)).join(' ／ ') : '';
+    rows += '<tr class="' + (r ? '' : 'none') + (wd === 0 ? ' sun' : '') + '"><td>' + d + '</td><td>' + '日月火水木金土'[wd] + '</td>' + cells +
+      '<td>' + (r ? esc(r.by) + (r.versions > 1 ? '<br><span class="hint">修正' + (r.versions - 1) + '回</span>' : '') : '記録なし') + '</td>' +
+      '<td class="n">' + notes + '</td></tr>';
+  }
+  const recorded = Object.keys(recs).length;
+  view.innerHTML =
+    '<div class="noprint"><div class="fields"><label class="f">表示する月<input type="month" id="listMonth" value="' + m + '"></label>' +
+    '<div style="display:flex;align-items:flex-end"><button class="secondary" id="printBtn" style="width:100%;height:46px">印刷する</button></div></div>' +
+    '<div class="summary"><div><b>' + recorded + '日</b>記録した日</div><div class="' + (ngCount ? 'bad' : '') + '"><b>' + ngCount + '件</b>×の記録</div></div></div>' +
+    '<div class="printhead">衛生管理 実施記録　' + STORES[state.store] + '　' + y + '年' + mo + '月</div>' +
+    '<div class="tablewrap"><table class="month"><tr><th>日</th><th>曜</th>' +
+    GENERAL.map(i => '<th>' + i.s + '</th>').join('') + CRITICAL.map(i => '<th>' + i.s + '</th>').join('') +
+    '<th>記入者</th><th>×のとき、どうしたか</th></tr>' + rows + '</table></div>' +
+    '<p class="hint noprint">直した記録も消えずにスプレッドシートに残ります。</p>';
+  $('#listMonth').onchange = e => { state.listMonth = e.target.value || today().slice(0, 7); render(); };
+  $('#printBtn').onclick = () => window.print();
+}
+
+// ---------- 毎月の振り返り ----------
+async function renderRev(my) {
+  const m = state.revMonth;
+  const items = await loadMonth(m, true);
+  if (my !== token) return;
+  const recs = items.filter(i => i.type === T_REC).sort((a, b) => a.date < b.date ? -1 : 1);
+  const ex = items.find(i => i.type === T_REV && i.date === m);
+  const y = +m.slice(0, 4), mo = +m.slice(5, 7);
+  const daysSoFar = m === today().slice(0, 7) ? new Date().getDate() : new Date(y, mo, 0).getDate();
+  const ngs = [];
+  recs.forEach(r => ALL_ITEMS.forEach(it => { const a = (r.data.answers || {})[it.k]; if (a && a.v === 'ng') ngs.push({ date: r.date, t: it.t, note: a.note }); }));
+  rev = {
+    month: m, answers: ex ? Object.assign({}, ex.data.answers) : {},
+    trouble: ex ? (ex.data.trouble || '') : ngs.map(n => (+n.date.slice(8)) + '日 ' + n.t + '：' + n.note).join('\n'),
+    next: ex ? (ex.data.next || '') : '', prev: ex ? ex.versions : 0
+  };
+  view.innerHTML =
+    '<div class="fields"><label class="f">振り返る月<input type="month" id="revMonth" value="' + m + '"></label>' +
+    byField('実施者') + '</div>' +
+    '<div class="status">' + (ex ? 'この月は振り返り済みです（' + esc(ex.by) + '）。' : '') + '</div>' +
+    '<div class="summary"><div><b>' + recs.length + ' / ' + daysSoFar + '日</b>記録した日</div><div class="' + (ngs.length ? 'bad' : '') + '"><b>' + ngs.length + '件</b>×の記録</div></div>' +
+    (ngs.length ? '<div class="ngs">' + ngs.map(n => '<p><b>' + (+n.date.slice(8)) + '日 ' + esc(n.t) + '</b><br>' + esc(n.note) + '</p>').join('') + '</div>' : '') +
+    '<h2>確認すること</h2>' +
+    REVIEW.map(q => '<div class="item" data-g="rev" data-k="' + q.k + '"><div class="txt"><b>' + q.t + '</b></div><div class="opts">' +
+      q.o.map(o => '<button type="button" data-v="' + esc(o) + '" class="' + (rev.answers[q.k] === o ? 'on' : '') + '">' + esc(o) + '</button>').join('') + '</div></div>').join('') +
+    '<h2>起きた問題と、どう直したか</h2><textarea class="big" id="trouble" placeholder="なければ「特になし」">' + esc(rev.trouble) + '</textarea>' +
+    '<h2>来月に向けて直すこと</h2><textarea class="big" id="next" placeholder="なければ「特になし」">' + esc(rev.next) + '</textarea>' +
+    '<button class="primary" id="saveRev">振り返りを保存する</button>';
+  $('#revMonth').onchange = e => { state.revMonth = e.target.value || today().slice(0, 7); render(); };
+  bindBy();
+  $('#trouble').oninput = e => rev.trouble = e.target.value;
+  $('#next').oninput = e => rev.next = e.target.value;
+  $('#saveRev').onclick = saveRev;
+}
+async function saveRev() {
+  const by = state.by.trim();
+  if (!by) return toast('実施者を選んでください');
+  const missing = REVIEW.find(q => !rev.answers[q.k]);
+  if (missing) return toast('まだ答えていません：' + missing.t);
+  if (!rev.trouble.trim() || !rev.next.trim()) return toast('問題がなければ「特になし」と書いてください');
+  const btn = $('#saveRev'); btn.disabled = true; btn.textContent = '保存しています…';
+  try {
+    await apiPost({ type: 'review', store: state.store, date: rev.month, by: by, data: { answers: rev.answers, trouble: rev.trouble, next: rev.next } });
+    const ok = await confirmSaved(rev.month, T_REV, rev.month, rev.prev);
+    if (ok) { toast('振り返りを保存しました'); render(); return; }
+    toast('保存を確認できませんでした。もう一度開いて確かめてください');
+  } catch (e) { toast('保存できませんでした：' + e.message); }
+  btn.disabled = false; btn.textContent = '振り返りを保存する';
+}
+
+// ---------- 計画（品目・保管場所・メニューの分類） ----------
+function draftGroups() { const t = $('#groups'); return (t ? t.value : (state.plan.groups || []).join('\n')).split('\n').map(s => s.trim()).filter(Boolean); }
+function draftPlaces() { const t = $('#places'); return (t ? t.value : (state.plan.places || []).join('\n')).split('\n').map(s => s.trim()).filter(Boolean); }
+function masterHtml(it, idx) {
+  const places = draftPlaces(), groups = draftGroups();
+  return '<div class="item mrow" data-id="' + it.id + '">' +
+    '<label class="f">品目<input data-f="name" value="' + esc(it.name) + '" placeholder="例：デミグラスソース"></label>' +
+    '<div class="fields3">' +
+      '<label class="f">区分<select data-f="group">' + opt([''].concat(groups), it.group || '', ['（その他）'].concat(groups)) + '</select></label>' +
+      '<label class="f">分類<select data-f="cls">' + opt(['', 'c1', 'c2', 'c3'], it.cls || '', ['なし', '非加熱', '加熱', '冷却再加熱']) + '</select></label>' +
+      '<label class="f">単位<select data-f="unit">' + opt(UNITS, it.unit || 'g') + '</select></label>' +
+    '</div><div class="fields3">' +
+      '<label class="f">保管場所<select data-f="place">' + opt([''].concat(places), it.place || '', ['（未設定）'].concat(places)) + '</select></label>' +
+      '<label class="f">1人あたり<input data-f="per" inputmode="decimal" value="' + esc(it.per) + '"></label>' +
+      '<label class="f">固定量<input data-f="fixed" inputmode="decimal" value="' + esc(it.fixed) + '"></label>' +
+    '</div><div class="fields3">' +
+      '<label class="f">保存日数<input data-f="days" inputmode="numeric" value="' + esc(it.days) + '" placeholder="' + DEFAULT_DAYS + '"></label>' +
+      '<label class="f">真空時の日数<input data-f="vdays" inputmode="numeric" value="' + esc(it.vdays) + '" placeholder="真空なし"></label>' +
+      '<label class="f">解凍後の日数<input data-f="fdays" inputmode="numeric" value="' + esc(it.fdays == null ? '' : it.fdays) + '" placeholder="冷凍なし"></label>' +
+    '</div>' +
+    '<label class="chk"><input type="checkbox" data-f="fire"' + (it.fire ? ' checked' : '') + '>火入れで期限を' + FIRE_DAYS + '日延ばせる（ソース・煮込み）</label><div class="acts">' +
+      (idx > 0 ? '<button type="button" class="linkbtn" data-up>上へ</button>' : '') +
+      '<button type="button" class="linkbtn" data-del>消す</button>' +
+    '</div></div>';
+}
+function paintMaster() {
+  const preset = PRESETS[state.store];
+  const parts = preset ? [preset.items.length ? '品目' + preset.items.length + '品' : '', (preset.groups || []).length ? '区分' : '', (preset.places || []).length ? '保管場所' + preset.places.length + 'か所' : ''].filter(Boolean) : [];
+  const showPreset = parts.length && (preset.items.length ? !planDraft.length : (!draftPlaces().length || !draftGroups().length));
+  $('#mlist').innerHTML = (planDraft.length ? planDraft.map(masterHtml).join('') : '<div class="status">まだ品目がありません。下のボタンから追加してください。</div>') +
+    (showPreset ? '<div class="status"><button type="button" class="secondary" id="loadPreset">' + STORES[state.store] + 'の初期設定を読み込む（' + parts.join('・') + '）</button></div>' : '');
+  const lp = $('#loadPreset');
+  if (lp) lp.onclick = () => {
+    const ps = presetItems(state.store);
+    if (ps.items.length && !planDraft.length) planDraft = ps.items;
+    if (!draftGroups().length && ps.groups.length) $('#groups').value = ps.groups.join('\n');
+    if (!draftPlaces().length && ps.places.length) $('#places').value = ps.places.join('\n');
+    paintMaster();
+    toast('読み込みました。内容を確かめて「計画を保存する」を押してください');
+  };
+}
+function renderPlan() {
+  const p = state.plan || {};
+  planDraft = JSON.parse(JSON.stringify(p.items || []));
+  view.innerHTML =
+    '<div class="status">' + (state.planSavedAt ? '' : 'まだ登録されていません') + '</div>' +
+    '<label class="chk" style="margin-top:14px"><input type="checkbox" id="usePrep"' + (prepOn() ? ' checked' : '') + '>この店で仕込み表（在庫・明日の仕込み）を使う</label>' +
+    '<p class="hint" style="margin-top:-4px">オフにすると「仕込み」タブが消え、衛生の記録だけになります。下の保管場所・区分・仕込み品目の欄も仕込み表用です。</p>' +
+    '<div id="prepSettings"' + (prepOn() ? '' : ' hidden') + '>' +
+    '<h2>保管場所</h2>' +
+    '<p class="hint" style="margin-top:-4px">この店の冷蔵庫・冷凍庫・棚を1行に1つ。仕込むときにここから選びます。</p>' +
+    '<textarea class="big" id="places" placeholder="例：台下冷蔵庫①&#10;台下冷蔵庫②&#10;冷凍庫&#10;ウォークイン">' + esc((p.places || []).join('\n')) + '</textarea>' +
+    '<h2>スタッフ</h2>' +
+    '<p class="hint" style="margin-top:-4px">記入者・担当者として選べる名前。1行に1人。両店で働く人は両方の店に入れます。</p>' +
+    '<textarea class="big" id="staff" placeholder="例：中村&#10;山本&#10;田中">' + esc((p.staff || []).join('\n')) + '</textarea>' +
+    '<h2>仕込み表の区分</h2>' +
+    '<p class="hint" style="margin-top:-4px">仕込み表の見出しになる区分を、上から順に1行に1つ（例：切りもの、ソース類、魚介類、肉類）。空なら区分なしで並びます。</p>' +
+    '<textarea class="big" id="groups" placeholder="例：切りもの&#10;ソース類&#10;魚介類&#10;肉類">' + esc((p.groups || []).join('\n')) + '</textarea>' +
+    '<h2>仕込み品目</h2>' +
+    '<p class="hint" style="margin-top:-4px">区分ごとに、並び順がそのまま仕込み表の順になります。「1人あたり」を入れると予約人数から必要量を計算します。「固定量」は人数に関係なく毎回仕込む量（両方入れると足し算）。保存日数は真空していないときの日数で、空なら' + DEFAULT_DAYS + '日。真空する品目は真空時の日数を、冷凍する品目は解凍してから何日もつかを入れます（空ならそのボタンは出ません）。</p>' +
+    '<div id="mlist"></div>' +
+    '<button type="button" class="secondary" id="addM" style="width:100%;height:46px;margin-top:4px">＋ 品目を追加</button>' +
+    '</div>' +
+    '<h2 style="margin-top:30px">メニューの分類（衛生管理）</h2>' +
+    '<p class="hint" style="margin-top:-4px">お客様に出すメニューを3つに分けて、1行に1品。「衛生」タブの重要管理に表示されます。 <button type="button" class="linkbtn" data-ref>食中毒の原因一覧を見る</button></p>' +
+    CRITICAL.map(it => '<h2>' + it.t + '</h2><p class="hint" style="margin-top:-6px">' + it.h + '</p>' +
+      '<textarea class="big" id="plan_' + it.k + '" placeholder="例：カルパッチョ">' + esc((p[it.k] || []).join('\n')) + '</textarea>').join('') +
+    '<h2>記入者</h2>' + byField('') +
+    '<button class="primary" id="savePlan">計画を保存する</button>';
+  bindBy();
+  $('#savePlan').onclick = savePlan;
+  $('#usePrep').onchange = e => { $('#prepSettings').hidden = !e.target.checked; };
+  paintMaster();
+}
+async function savePlan() {
+  const by = state.by.trim();
+  if (!by) return toast('記入者を選んでください');
+  const data = { usePrep: $('#usePrep').checked, places: draftPlaces(), groups: draftGroups(), staff: $('#staff').value.split('\n').map(s => s.trim()).filter(Boolean) };
+  CRITICAL.forEach(it => data[it.k] = $('#plan_' + it.k).value.split('\n').map(s => s.trim()).filter(Boolean));
+  data.items = planDraft.filter(it => String(it.name || '').trim()).map(it => ({
+    id: it.id, name: String(it.name).trim(), cls: it.cls || '', unit: it.unit || 'g', place: it.place || '', group: it.group || '',
+    per: optNum(it.per), fixed: optNum(it.fixed), days: optNum(it.days), vdays: optNum(it.vdays), fdays: optNum(it.fdays), fire: !!it.fire
+  }));
+  const before = state.planSavedAt;
+  const btn = $('#savePlan'); btn.disabled = true; btn.textContent = '保存しています…';
+  try {
+    await apiPost({ type: 'plan', store: state.store, by: by, data: data });
+    for (let i = 0; i < 4; i++) {
+      await sleep(1500);
+      try { await loadPlan(); } catch (e) { continue; }
+      if (state.planSavedAt && state.planSavedAt !== before) { toast('計画を保存しました'); renderPlan(); return; }
+    }
+    toast('保存を確認できませんでした。もう一度開いて確かめてください');
+  } catch (e) { toast('保存できませんでした：' + e.message); }
+  btn.disabled = false; btn.textContent = '計画を保存する';
+}
+
+// ---------- ボタンの反応（まとめて受け取る） ----------
+view.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+
+  // 仕込みフォーム
+  if (b.dataset.prep !== undefined) {
+    const it = itemById(b.dataset.prep);
+    if (it) { openForm = newForm(it, false); paintNeeds(); }
+    return;
+  }
+  if (b.dataset.keep && openForm) {
+    openForm.keep = b.dataset.keep;
+    if (!openForm.expTouched) openForm.exp = openForm.keep === 'frz' ? '' : addDays(state.prepDate, lotDays(openForm.item, openForm.keep === 'vac'));
+    if (openForm.keep === 'frz') { const fz = freezerPlace(); if (fz) openForm.pl = fz; }
+    else if (openForm.item.place) openForm.pl = openForm.item.place;
+    paintNeeds(); return;
+  }
+  if (b.dataset.fv && openForm) {
+    openForm.v = b.dataset.fv;
+    const form = b.closest('.form');
+    form.querySelectorAll('.yn button').forEach(x => x.classList.toggle('on', x === b));
+    const note = form.querySelector('.note'); note.hidden = openForm.v !== 'ng';
+    if (!note.hidden) note.focus();
+    return;
+  }
+  if (b.hasAttribute('data-ref')) { openRef(); return; }
+  if (b.hasAttribute('data-add') && openForm) { addLot(); return; }
+  if (b.hasAttribute('data-cancel')) { openForm = null; paintNeeds(); return; }
+
+  // 在庫の操作
+  const lotEl = b.closest('[data-lot]');
+  if (lotEl && b.dataset.act) { const lot = lotById(lotEl.dataset.lot); if (lot) lotAction(lot, b.dataset.act); return; }
+
+  // 計画：品目の追加・並べ替え・削除
+  if (b.id === 'addM') {
+    planDraft.push({ id: uid('m'), name: '', cls: '', unit: 'g', place: '', group: '', per: '', fixed: '', days: '', vdays: '', fdays: '', fire: false });
+    paintMaster();
+    const rows = document.querySelectorAll('.mrow');
+    rows[rows.length - 1].querySelector('input').focus();
+    return;
+  }
+  const mrow = b.closest('.mrow');
+  if (mrow && b.hasAttribute('data-del')) {
+    if (!confirm('この品目を消しますか？（「計画を保存する」を押すまで確定しません）')) return;
+    planDraft = planDraft.filter(x => x.id !== mrow.dataset.id); paintMaster(); return;
+  }
+  if (mrow && b.hasAttribute('data-up')) {
+    const i = planDraft.findIndex(x => x.id === mrow.dataset.id);
+    if (i > 0) { const x = planDraft[i]; planDraft[i] = planDraft[i - 1]; planDraft[i - 1] = x; paintMaster(); }
+    return;
+  }
+
+  // 衛生・振り返りの○×
+  const item = b.closest('.item[data-g]');
+  if (!item || !b.dataset.v) return;
+  const k = item.dataset.k;
+  if (item.dataset.g === 'rec') {
+    rec.answers[k] = rec.answers[k] || { v: '', note: '' };
+    rec.answers[k].v = b.dataset.v;
+    item.classList.remove('ok', 'ng'); item.classList.add(b.dataset.v);
+    item.querySelectorAll('.yn button').forEach(x => x.classList.toggle('on', x === b));
+    const note = item.querySelector('.note'); note.hidden = b.dataset.v !== 'ng';
+    if (!note.hidden) note.focus();
+    progress();
+  } else if (item.dataset.g === 'rev') {
+    rev.answers[k] = b.dataset.v;
+    item.querySelectorAll('.opts button').forEach(x => x.classList.toggle('on', x === b));
+  }
+});
+
+function onFieldInput(e) {
+  const t = e.target;
+  // 計画
+  const mrow = t.closest('.mrow');
+  if (mrow && t.dataset.f) {
+    const it = planDraft.find(x => x.id === mrow.dataset.id);
+    if (!it) return;
+    it[t.dataset.f] = t.type === 'checkbox' ? t.checked : t.value;
+    if (t.dataset.f === 'cls' && t.value === 'c3' && !it.fireTouched) { it.fire = true; mrow.querySelector('[data-f="fire"]').checked = true; }
+    if (t.dataset.f === 'fire') it.fireTouched = true;
+    return;
+  }
+  if (t.id === 'places' || t.id === 'groups') { if (e.type === 'change') paintMaster(); return; }
+  // 仕込みフォーム
+  if (openForm && t.closest('.form')) {
+    if (t.classList.contains('fq')) openForm.qty = t.value;
+    if (t.classList.contains('fpl')) openForm.pl = t.value;
+    if (t.classList.contains('fexp')) { openForm.exp = t.value; openForm.expTouched = true; }
+    if (t.classList.contains('note')) openForm.note = t.value;
+    if (t.classList.contains('fcls')) { openForm.item.cls = t.value; if (t.value === 'c3') openForm.item.fire = true; }
+    if (t.classList.contains('funit')) { openForm.item.unit = t.value; const uEl = t.closest('.form').querySelector('.unit'); if (uEl) uEl.textContent = t.value; }
+    return;
+  }
+  // 在庫の「直す」
+  const lotEl = t.closest('.lot');
+  if (lotEl && e.type === 'change') {
+    const lot = lotById(lotEl.dataset.lot); if (!lot) return;
+    if (t.classList.contains('eq')) lot.q = num(t.value);
+    if (t.classList.contains('eexp')) lot.exp = t.value;
+    if (t.classList.contains('epl')) lot.pl = t.value;
+    lot.at = nowIso(); markDirty(); paintPrep(); return;
+  }
+  // 衛生の×メモ
+  const item = t.closest('.item[data-g="rec"]');
+  if (item && t.classList.contains('note')) rec.answers[item.dataset.k].note = t.value;
+}
+view.addEventListener('input', onFieldInput);
+view.addEventListener('change', onFieldInput);
+document.querySelectorAll('.switch button').forEach(b => b.onclick = () => setStore(b.dataset.store));
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+$('#saveStock').onclick = saveStock;
+$('#refClose').onclick = () => { $('#refpanel').hidden = true; };
+
+// ---------- ご意見箱 ----------
+let fbKind = FEEDBACK_KINDS[0];
+function openFeedback() {
+  const staff = (state.plan && state.plan.staff) || [];
+  $('#fbName').innerHTML = staff.length
+    ? '<label class="f">名前（任意）<select id="fbWho">' + opt([''].concat(staff), state.by, ['（匿名）'].concat(staff)) + '</select></label>'
+    : '<label class="f">名前（任意）<input id="fbWho" value="' + esc(state.by) + '" placeholder="空欄でも送れます"></label>';
+  fbKind = FEEDBACK_KINDS[0];
+  $('#fbKinds').innerHTML = FEEDBACK_KINDS.map((k, i) => '<button type="button" data-kind="' + esc(k) + '" class="' + (i === 0 ? 'on' : '') + '">' + esc(k) + '</button>').join('');
+  $('#fbText').value = '';
+  $('#fbpanel').hidden = false;
+}
+$('#fbBtn').onclick = openFeedback;
+$('#fbCancel').onclick = () => { $('#fbpanel').hidden = true; };
+$('#fbpanel').addEventListener('click', e => { if (e.target === $('#fbpanel')) $('#fbpanel').hidden = true; });
+$('#fbKinds').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  fbKind = b.dataset.kind;
+  $('#fbKinds').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+});
+$('#fbSend').onclick = () => {
+  const text = $('#fbText').value.trim();
+  if (!text) return toast('内容を書いてください');
+  if (FEEDBACK_URL.indexOf('https://') !== 0) return toast('ご意見箱の送り先がまだ設定されていません');
+  const name = ($('#fbWho').value || '').trim();
+  try {
+    fetch(FEEDBACK_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'save_feedback', data: { feedback: { at: new Date().toLocaleString('ja-JP'), app: FEEDBACK_APP_NAME + '（' + STORES[state.store] + '）', name: name, kind: fbKind, text: text } } }) });
+  } catch (e) { /* no-corsなので結果は見えない */ }
+  $('#fbpanel').hidden = true;
+  toast('✅ 送信しました。ありがとうございます');
+};
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+// 起動
+document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === state.tab));
+setStore('nakamura');
+</script>
+</body>
+</html>
