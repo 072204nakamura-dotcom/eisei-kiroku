@@ -442,7 +442,7 @@ let dirty = 0, openForm = null, editLot = null, peopleTouched = false;
 // ---------- 通信 ----------
 async function apiGet(params) {
   if (GAS_URL.indexOf('https://') !== 0) throw new Error('GAS_URL がまだ設定されていません');
-  const res = await fetch(GAS_URL + '?' + new URLSearchParams(params).toString());
+  const res = await fetch(GAS_URL + '?' + new URLSearchParams(params).toString() + '&_=' + Date.now(), { cache: 'no-store' });
   const j = await res.json();
   if (!j.ok) throw new Error(j.error || '読み込みに失敗しました');
   return j;
@@ -476,8 +476,8 @@ async function loadStock() {
 }
 // no-cors では保存の結果が読めないので、読み直して本当に増えたかを確かめる
 async function confirmSaved(month, type, date, prevVersions) {
-  for (let i = 0; i < 4; i++) {
-    await sleep(1500);
+  for (let i = 0; i < 6; i++) {
+    await sleep(i === 0 ? 1000 : 2000);
     try {
       const items = await loadMonth(month, true);
       const f = items.find(x => x.type === type && x.date === date);
@@ -831,8 +831,8 @@ async function saveStock() {
     const merged = mergeLedger(state.stock, server ? server.ledger : null);
     prune(merged);
     await apiPost({ type: 'stock', store: state.store, by: by, data: merged });
-    for (let i = 0; i < 4; i++) {
-      await sleep(1500);
+    for (let i = 0; i < 6; i++) {
+      await sleep(i === 0 ? 1000 : 2000);
       try {
         const r = await fetchStock();
         if (serverHas(r.ledger, merged)) {
@@ -1095,8 +1095,8 @@ async function savePlan() {
   const btn = $('#savePlan'); btn.disabled = true; btn.textContent = '保存しています…';
   try {
     await apiPost({ type: 'plan', store: state.store, by: by, data: data });
-    for (let i = 0; i < 4; i++) {
-      await sleep(1500);
+    for (let i = 0; i < 6; i++) {
+      await sleep(i === 0 ? 1000 : 2000);
       try { await loadPlan(); } catch (e) { continue; }
       if (state.planSavedAt && state.planSavedAt !== before) { toast('計画を保存しました'); renderPlan(); return; }
     }
